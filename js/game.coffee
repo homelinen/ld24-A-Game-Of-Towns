@@ -55,11 +55,12 @@ BuildState = ->
             for tile in tileMap.at(jaws.mouse_x, jaws.mouse_y)
                 if tile.name == "worker"
                     workerPresent = yes
+                    break
 
             if !workerPresent
                 tilePos = getTileCorner(jaws.mouse_x, jaws.mouse_y)
                 # Place a person
-                worker = new Worker(tilePos.x, tilePos.y, 50, 10)
+                worker = new Worker(tilePos.x, tilePos.y, 50, 5)
 
                 console.log "Added worker"
                 tileMap.push(worker)
@@ -67,7 +68,7 @@ BuildState = ->
         if pressed("enter") || pressed "s"
             console.log "Simulate"
 
-            for i in [0..0]
+            for i in [0..1]
                 Simulate().step()
         return
 
@@ -106,15 +107,21 @@ Simulate = ->
                     villager.update()
 
                     if workCount >= @villPop
-                        tileMap.push(new Sprite {
+                        console.x "Villager: #{villager.x}, #{villager.y}"
+                        village = new Sprite {
                             image: "img/village.png",
                             x: villager.x,
                             y: villager.y
-                        })
-                        removeWorker(villager.x, villager.y)
+                        }
+                        village.name = "village"
+                        tileMap.push(village)
+                        removeObject(villager.x, villager.y, "worker")
                 else
                     console.log "Villager died #{villager.x}, #{villager.y} Food: #{villager.food}"
-                    removeWorker(villager.x, villager.y)
+                    removeObject(villager.x, villager.y, "worker")
+            else if villager.name == "bush"
+                if !villager.alive
+                    removeObject(villager.x, villager.y, "bush")
         return
 
     return @
@@ -124,14 +131,14 @@ getTileCorner = (x, y) ->
     # x xPosition
     # y yPosition
     # Return Object with fields x and y
-    xPos = (Math.floor getTilePos(x)) * TILE_SIZE
-    yPos = (Math.floor getTilePos(y)) * TILE_SIZE
+    xPos = (Math.floor getTilePosx(x)) * TILE_SIZE
+    yPos = (Math.floor getTilePosy(y)) * TILE_SIZE
     console.log "Corner: #{xPos}, #{yPos}"
     { x: xPos, y: yPos }
 
 getSurroundingTiles = (x, y) ->
-    x = getTilePos(x)
-    y = getTilePos(y)
+    x = getTilePosx(x)
+    y = getTilePosy(y)
     
     getSurroundingCells {x: x, y: y}
 
@@ -165,26 +172,26 @@ getSurroundingCells = (pos) ->
         dx++
     tiles
 
-isNearFood = (pos)->
+isNearObject = (pos)->
     neighbours = getSurroundingCells(pos) 
     for neighbour in neighbours
         items = tileMap.cell(neighbour.x, neighbour.y)
         for item in items
-            if item.name == "bush"
+            if item.name == "bush" || item.name == "worker"
                 true
     false
 
-removeWorker = (x, y) ->
+removeObject = (x, y, name = "") ->
     # Removes worker at point
 
-    items = tileMap.cells[getTilePos(x)][getTilePos(y)]
+    items = tileMap.at(x, y)
     count = 0
     if jaws.isArray items
         for item in items
-            if item.name == "worker"
+            if item.name == name
                 break
             count++
-        tileMap.cells[getTilePos(x)][getTilePos(y)].splice(count, 1)
+        tileMap.cells[getTilePosx(x)][getTilePosy(y)].splice(count, 1)
     return
 
 getRandPos = ->
@@ -205,11 +212,28 @@ getRandBoolean = ->
     else 
         false
 
-getTilePos = (pos) -> 
+getTilePosx = (x) -> 
+    x = getTilePos(x)
+    if x < 0
+        x = 0
+    else if x > getMapWidth()
+        x = getMapWidth()
+    x
+
+getTilePosy = (y) ->
+
+    y = getTilePos(y)
+    if y < 0
+        y = 0
+    else if y > getMapHeight()
+        y = getMapHeight()
+    y
+
+getTilePos = (pos) ->
     pos / TILE_SIZE
 
 getPoint = (x, y) ->
-    return { x: getTilePos(x), y: getTilePos(y) }
+    return { x: getTilePosx(x), y: getTilePosy(y) }
 
 getMapWidth = ->
     jaws.width / TILE_SIZE
@@ -234,7 +258,6 @@ class Worker
         @sprite.draw()
 
     update: ->
-        # Horrible duplication
         @eat()
         @walk()
         return
@@ -242,11 +265,14 @@ class Worker
     move: (x, y)->
         # Move player
 
-        console.log "Moved: <#{x}, #{y}>"
         x *= TILE_SIZE
         y *= TILE_SIZE
+
+        newX = getTilePosx( @sprite.x + x )
+        newY = getTilePosy( @sprite.y + y ) 
+        removeObject(@sprite.x, @sprite.y, "worker")
+        console.log "X: #{newX}, Y: #{newY}"
         @sprite.move(x, y)
-        removeWorker(@sprite.x, @sprite.y)
         tileMap.push @sprite
 
         @x = x
@@ -254,19 +280,20 @@ class Worker
         return
 
     walk: ->
-        if (!isNearFood( getPoint(@sprite.x, @sprite.y) ))
+        if (!isNearObject( getPoint(@sprite.x, @sprite.y) ))
             dx = 0
             dy = 0
-            if getRandBoolean() 
-                if getRandBoolean()
-                    dx = 1
+            while dx == 0 && dy ==0
+                if getRandBoolean() 
+                    if getRandBoolean()
+                        dx = 1
+                    else
+                        dx = -1
                 else
-                    dx = -1
-            else
-                if getRandBoolean()
-                    dy = 1
-                else 
-                    dy = -1
+                    if getRandBoolean()
+                        dy = 1
+                    else 
+                        dy = -1
 
             @move(dx, dy)
         return
