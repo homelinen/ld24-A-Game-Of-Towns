@@ -60,14 +60,16 @@ BuildState = ->
             if !workerPresent
                 tilePos = getTileCorner(jaws.mouse_x, jaws.mouse_y)
                 # Place a person
-                worker = new Worker(tilePos.x, tilePos.y)
+                worker = new Worker(tilePos.x, tilePos.y, 50, 10)
 
                 console.log "Added worker"
                 tileMap.push(worker)
 
         if pressed("enter") || pressed "s"
             console.log "Simulate"
-            Simulate().step()
+
+            for i in [0..5]
+                Simulate().step()
 
     @draw = ->
         Init().draw()
@@ -86,24 +88,33 @@ Simulate = ->
     @workers = ->
         console.log "Work"
         # Have villagers do shit?
-        for object in tileMap.all()
+        for villager in tileMap.all()
             workCount = 0
-            if object.name == "worker"
-                adjacent = getSurroundingTiles(object.x, object.y)
-                for point in adjacent
+            if villager.name == "worker"
+                if villager.alive
+                    adjacent = getSurroundingTiles(villager.x, villager.y)
+                    for point in adjacent
 
-                    tempTile = tileMap.cell(point.x, point.y)
-                    # Loop through items at tile
-                    for item in tempTile
-                        if  item.name == "worker"
-                            workCount++
-                if workCount >= @villPop
-                    tileMap.push(new Sprite {
-                        image: "img/village.png",
-                        x: object.x,
-                        y: object.y
-                    })
-                    removeWorker(object.x, object.y)
+                        tempTile = tileMap.cell(point.x, point.y)
+                        # Loop through items at tile
+                        for item in tempTile
+                            if  item.name == "worker"
+                                workCount++
+                            else if item.name == "bush"
+                                villager.gather(item)
+
+                    villager.update()
+
+                    if workCount >= @villPop
+                        tileMap.push(new Sprite {
+                            image: "img/village.png",
+                            x: villager.x,
+                            y: villager.y
+                        })
+                        removeWorker(villager.x, villager.y)
+                else
+                    console.log "Villager died #{villager.x}, #{villager.y} Food: #{villager.food}"
+                    removeWorker(villager.x, villager.y)
         return
 
     return @
@@ -164,7 +175,7 @@ removeWorker = (x, y) ->
         if item.name == "worker"
             break
         count++
-    items.slice(count, 1)
+    tileMap.cells[getTilePos(x)][getTilePos(y)].splice(count, 1)
 
 getRand = (max) ->
     rand = Math.random()
@@ -173,6 +184,7 @@ getRand = (max) ->
         rand *= mult
 
     rand
+
 getTilePos = (pos) -> 
     pos / TILE_SIZE
 
@@ -182,7 +194,7 @@ getMapHeight = ->
         jaws.height / TILE_SIZE
 
 class Worker
-    constructor: (xPos, yPos) ->
+    constructor: (xPos, yPos, @carryWeight, @food) ->
         @alive = true
         @sprite = new Sprite {
              image: "img/villager.png",
@@ -192,20 +204,34 @@ class Worker
         @x = @sprite.x
         @y = @sprite.y
         @name = "worker"
+        @curWeight = @food
     
     draw: ->
         @sprite.draw()
 
     update: ->
         # Horrible duplication
-        @x = sprite.x
-        @y = sprite.y
+        @eat()
 
     move: (x, y)->
         # Move player
         @sprite.move(x, y)
         @x = x
         @y = y
+
+    gather: (bush) ->
+        @food += bush.gather @carryWeight - @curWeight
+        @curWeight = 0
+        
+    eat: ->
+        if @food > 0
+            foodConsumed = 1
+            @food -= foodConsumed
+            @curWeight -= foodConsumed
+
+        if @food <= 0
+            console.log "Starved"
+            @alive = false
 
     toString: ->
         return "#{@name}: #{@x}, #{@y}"
@@ -222,6 +248,7 @@ class Bush
         @alive = true
         @x = @sprite.x
         @y = @sprite.y
+        @name = "bush"
 
     gather: (amount) ->
         if (@food - amount) > 0
