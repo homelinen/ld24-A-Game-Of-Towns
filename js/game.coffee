@@ -91,7 +91,16 @@ Simulate = ->
                         x: object.x,
                         y: object.y
                     })
-                    console.log "Village at #{object.x}, #{object.y}"
+                    items = tileMap.cells[getTilePos(object.x)][getTilePos(object.y)]
+                    count = 0
+                    for item in items
+                        if item.name == "worker"
+                            break
+                        count++
+                    items.slice(count, 1)
+
+        if pressed "d"
+            console.log tileMap.all()
         return
         
     @draw = ->
