@@ -86,6 +86,11 @@ Simulate = ->
                         if  item.name == "worker"
                             workCount++
                 if workCount >= @villPop
+                    tileMap.push(new Sprite {
+                        image: "img/village.png",
+                        x: object.x,
+                        y: object.y
+                    })
                     console.log "Village at #{object.x}, #{object.y}"
         return
         
@@ -186,6 +191,7 @@ jaws.onload = ->
     jaws.unpack()
     jaws.assets.add("img/grass-tile.png")
     jaws.assets.add("img/villager.png")
+    jaws.assets.add("img/village.png")
     #jaws.assets.loadAll()
 
     jaws.start Init
