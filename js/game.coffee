@@ -1,5 +1,4 @@
 
-tiles = null
 tileMap = null
 TILE_SIZE = null
 
@@ -11,8 +10,8 @@ Init = ->
         tiles = new SpriteList
         tile = "img/grass-tile.png"
         TILE_SIZE = 32
-        mapWidth = (jaws.width / TILE_SIZE) 
-        mapHeight = (jaws.height / TILE_SIZE)
+        mapWidth = getMapWidth() 
+        mapHeight = getMapHeight()
 
         for xPos in [0..mapWidth]
             for yPos in [0..mapHeight]
@@ -57,9 +56,43 @@ BuildState = ->
                 console.log "Added worker"
                 tileMap.push(worker)
 
+        if pressed("enter") || pressed "s"
+            console.log "Simulate"
+            jaws.switchGameState(Simulate)
+
     @draw = ->
         Init().draw()
         return
+    return @
+
+Simulate = ->
+    #Runs a simulation of the villagers
+
+    @setup = ->
+        @villPop = 3
+        return
+
+    @update = ->
+        # Have villagers do shit?
+        for object in tileMap.all()
+            workCount = 0
+            if object.name == "worker"
+                adjacent = getSurroundingTiles(object.x, object.y)
+                for point in adjacent
+
+                    tempTile = tileMap.cell(point.x, point.y)
+                    # Loop through items at tile
+                    for item in tempTile
+                        if  item.name == "worker"
+                            workCount++
+                if workCount >= @villPop
+                    console.log "Village at #{object.x}, #{object.y}"
+        return
+        
+    @draw = ->
+        Init().draw()
+        return
+
     return @
 
 getTileCorner = (x, y) ->
@@ -67,12 +100,57 @@ getTileCorner = (x, y) ->
     # x xPosition
     # y yPosition
     # Return Object with fields x and y
-    xPos = (Math.floor x / TILE_SIZE) * TILE_SIZE
-    yPos = (Math.floor y / TILE_SIZE) * TILE_SIZE
+    xPos = (Math.floor getTilePos(x)) * TILE_SIZE
+    yPos = (Math.floor getTilePos(y)) * TILE_SIZE
     console.log "Corner: #{xPos}, #{yPos}"
     { x: xPos, y: yPos }
 
+getSurroundingTiles = (x, y) ->
+    x = getTilePos(x)
+    y = getTilePos(y)
     
+    getSurroundingCells {x: x, y: y}
+
+
+getSurroundingCells = (pos) ->
+    # Get tiles for the cell represented by obj:
+    # {x, y}
+
+    dx = -1
+    dy = -1
+    tiles = []
+
+    x = pos.x
+    y = pos.y
+
+    mapWidth = getMapWidth()
+    mapHeight = getMapHeight()
+
+    tempx = x + dx
+    tempy = y + dy
+    while dx < 2 && tempx >= 0 && tempx < mapWidth
+        tempx = x + dx
+        while dy < 2 && tempy >= 0 && tempy < mapHeight
+            tempy = y + dy
+            
+            if tempx == x || tempy == y
+                # Ensure not on a diagonal
+                
+                tiles.push {x: tempx, y: tempy}
+            dy++
+        dy = -1
+        dx++
+    tiles
+
+getTilePos = (pos) -> 
+    pos / TILE_SIZE
+
+
+getMapWidth = ->
+        jaws.width / TILE_SIZE
+getMapHeight = ->
+        jaws.height / TILE_SIZE
+
 class Worker
     constructor: (xPos, yPos) ->
         @alive = true
@@ -92,6 +170,14 @@ class Worker
         # Horrible duplication
         @x = sprite.x
         @y = sprite.y
+
+    move: (x, y)->
+        # Move player
+        @sprite.move(x, y)
+        @x = x
+        @y = y
+
+
 
     toString: ->
         return "#{@name}: #{@x}, #{@y}"
