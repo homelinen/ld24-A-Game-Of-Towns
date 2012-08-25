@@ -49,6 +49,7 @@ BuildState = ->
 
     @update = ->
         if jaws.pressed("left_mouse_button")
+            workerPresent = no
 
             for tile in tileMap.at(jaws.mouse_x, jaws.mouse_y)
                 if tile.name == "worker"
@@ -279,6 +280,9 @@ class Worker
         @name = "worker"
         @curWeight = @food
         @foodEaten = 2 * @food
+        @maxFood = @foodEaten
+        @lastDx = 0
+        @lastDy = 0
     
     draw: ->
         @sprite.draw()
@@ -317,12 +321,14 @@ class Worker
                         dx = 1
                     else
                         dx = -1
+
                 else
                     if getRandBoolean()
                         dy = 1
                     else 
                         dy = -1
 
+            console.log "#{dx}, #{dy}"
             @move(dx, dy)
         return
 
@@ -331,18 +337,23 @@ class Worker
         @curWeight = 0
         
     eat: ->
-        @foodEaten -= 1
+        @foodEaten -= @maxFood / 8
 
-        if @foodEaten < 1
+        if @foodEaten < @maxFood
             if @food > 0
                 foodConsumed = 1
-                @foodEaten += 2 * foodConsumed
+                @foodEaten += 3 * foodConsumed
                 @food -= foodConsumed
                 @curWeight -= foodConsumed
 
-            if @food <= 0
+            if @foodEaten <= 0
                 console.log "Starved"
                 @alive = false
+
+        if @foodEaten > @maxFood * 0.8
+            pos = getRandomNeighbour(@x, @y)
+            if pos?
+                worker = new Worker(pos.x, pos.y, @carryWeight, @food / 2)
 
     toString: ->
         return "#{@name}: #{@x}, #{@y}"
