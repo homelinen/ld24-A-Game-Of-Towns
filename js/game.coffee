@@ -75,7 +75,6 @@ BuildState = ->
         for tile in allTiles
             if tile.name == "worker"
                 tilePeople += "[#{tile.x}, #{tile.y}]<br />"
-        document.getElementById("villagers").innerHTML = tilePeople
         return
 
     @draw = ->
@@ -353,7 +352,6 @@ class Bush
 
     draw: ->
         @sprite.draw()
-
 
 jaws.onload = ->
     jaws.unpack()
