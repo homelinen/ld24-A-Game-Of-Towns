@@ -58,7 +58,7 @@ BuildState = ->
 
         if pressed("enter") || pressed "s"
             console.log "Simulate"
-            jaws.switchGameState(Simulate)
+            Simulate().step()
 
     @draw = ->
         Init().draw()
@@ -68,11 +68,14 @@ BuildState = ->
 Simulate = ->
     #Runs a simulation of the villagers
 
-    @setup = ->
+    @step = ->
+        # Maybe make a param?
+        
         @villPop = 3
-        return
+        @workers()
 
-    @update = ->
+    @workers = ->
+        console.log "Work"
         # Have villagers do shit?
         for object in tileMap.all()
             workCount = 0
@@ -92,13 +95,6 @@ Simulate = ->
                         y: object.y
                     })
                     removeWorker(object.x, object.y)
-
-        if pressed "d"
-            console.log tileMap.all()
-        return
-        
-    @draw = ->
-        Init().draw()
         return
 
     return @
@@ -194,8 +190,6 @@ class Worker
         @sprite.move(x, y)
         @x = x
         @y = y
-
-
 
     toString: ->
         return "#{@name}: #{@x}, #{@y}"
