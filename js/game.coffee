@@ -97,37 +97,38 @@ Simulate = ->
         # Have villagers do shit?
         for villager in tileMap.all()
             workCount = 0
-            if villager.name == "worker"
+
+            if villager.name != undefined 
                 if villager.alive
-                    adjacent = getSurroundingTiles(villager.x, villager.y)
-                    for point in adjacent
+                    if villager.name == "worker"
+                        adjacent = getSurroundingTiles(villager.x, villager.y)
+                        for point in adjacent
 
-                        tempTile = tileMap.cell(point.x, point.y)
-                        # Loop through items at tile
-                        for item in tempTile
-                            if  item.name == "worker"
-                                workCount++
-                            else if item.name == "bush"
-                                villager.gather(item)
+                            tempTile = tileMap.cell(point.x, point.y)
+                            # Loop through items at tile
+                            for item in tempTile
+                                if  item.name == "worker"
+                                    workCount++
+                                else if item.name == "bush"
+                                    villager.gather(item)
 
-                    villager.update()
+                        villager.update()
 
-                    if workCount >= @villPop
-                        village = new Sprite {
-                            image: "img/village.png",
-                            x: villager.x,
-                            y: villager.y
-                        }
-                        village.name = "village"
-                        tileMap.push(village)
-                        console.log "Build a house #{villager.x}, #{villager.y}"
-                        removeObject(villager.x, villager.y, "worker")
+                        if workCount >= @villPop
+                            village = new Sprite {
+                                image: "img/village.png",
+                                x: villager.x,
+                                y: villager.y
+                            }
+                            village.name = "village"
+                            tileMap.push(village)
+                            console.log "Build a house #{villager.x}, #{villager.y}"
+                            removeObject(villager.x, villager.y, "worker")
                 else
-                    console.log "Villager died #{villager.x}, #{villager.y} Food: #{villager.food}"
-                    removeObject(villager.x, villager.y, "worker")
-            else if villager.name == "bush"
-                if !villager.alive
-                    removeObject(villager.x, villager.y, "bush")
+                    vname = villager.name
+                    console.log "#{vname} died #{villager.x}, #{villager.y}"
+                    if vname == "worker" || vname == "bush"
+                        removeObject(villager.x, villager.y, vname)
         return
 
     return @
