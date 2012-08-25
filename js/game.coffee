@@ -87,11 +87,11 @@ Simulate = ->
     @workers = ->
         # Have villagers do shit?
         for villager in tileMap.all()
-            workCount = 0
 
             if villager.name != undefined 
                 if villager.alive
                     if villager.name == "worker"
+                        workCount = 0
                         adjacent = getSurroundingTiles(villager.x, villager.y)
                         for point in adjacent
 
@@ -100,6 +100,8 @@ Simulate = ->
                             for item in tempTile
                                 if  item.name == "worker"
                                     workCount++
+                                    # In case two workers occupy the same space
+                                    break
                                 else if item.name == "bush"
                                     villager.gather(item)
 
@@ -183,7 +185,7 @@ removeObject = (x, y, name = "") ->
 
     items = tileMap.at(x, y)
     count = 0
-    if jaws.isArray items && items != undefined
+    if jaws.isArray(items) && items != undefined
         for item in items
             if item.name == name
                 break
@@ -283,7 +285,7 @@ class Worker
         if (!isNearObject( getPoint(@sprite.x, @sprite.y) ))
             dx = 0
             dy = 0
-            while dx == 0 && dy ==0
+            while dx == 0 && dy == 0
                 if getRandBoolean() 
                     if getRandBoolean()
                         dx = 1
