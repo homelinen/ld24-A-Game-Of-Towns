@@ -24,6 +24,15 @@ Init = ->
         tileMap = new TileMap { cell_size: [TILE_SIZE,TILE_SIZE] }
         tileMap.push tiles
 
+        bushes = []
+        for bush in [0..4]
+    
+            tilePos = getTileCorner getRand(jaws.width), getRand(jaws.height)
+            console.log "Pos: " + tilePos + "Rand: " + Math.random()
+            
+            bushes.push new Bush(tilePos.x, tilePos.y, 5)
+
+        tileMap.push bushes
         jaws.switchGameState(BuildState)
 
     @draw = ->
@@ -157,6 +166,13 @@ removeWorker = (x, y) ->
         count++
     items.slice(count, 1)
 
+getRand = (max) ->
+    rand = Math.random()
+    mult = 10
+    while rand * mult < max
+        rand *= mult
+
+    rand
 getTilePos = (pos) -> 
     pos / TILE_SIZE
 
@@ -194,11 +210,39 @@ class Worker
     toString: ->
         return "#{@name}: #{@x}, #{@y}"
 
+class Bush
+    # Food giving object
+    # Food int representation of food provided
+    constructor: (xPos, yPos, @food) ->
+        @sprite = new Sprite {
+            image: "img/bush.png",
+            x: xPos,
+            y: yPos
+            }
+        @alive = true
+        @x = @sprite.x
+        @y = @sprite.y
+
+    gather: (amount) ->
+        if (@food - amount) > 0
+            @food -= amount
+            amount
+        else 
+            amount = @food
+            @food = 0
+            @alive = false
+            amount
+
+    draw: ->
+        @sprite.draw()
+
+
 jaws.onload = ->
     jaws.unpack()
     jaws.assets.add("img/grass-tile.png")
     jaws.assets.add("img/villager.png")
     jaws.assets.add("img/village.png")
+    jaws.assets.add("img/bush.png")
     #jaws.assets.loadAll()
 
     jaws.start Init
