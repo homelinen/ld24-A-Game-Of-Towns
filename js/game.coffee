@@ -48,7 +48,7 @@ BuildState = ->
         return
 
     @update = ->
-        if jaws.pressed("left_mouse_button")
+        if jaws.pressed "left_mouse_button"
             workerPresent = no
 
             for tile in tileMap.at(jaws.mouse_x, jaws.mouse_y)
@@ -63,10 +63,15 @@ BuildState = ->
 
                 tileMap.push(worker)
 
-        if pressed("enter") || pressed "s"
-            console.log "Simulate"
+        if jaws.pressed "right_mouse_button"
 
-            for i in [0..1]
+            tilePos = getTileCorner(jaws.mouse_x, jaws.mouse_y)
+            removeObject(tilePos.x, tilePos.y, "worker")
+
+        if pressed("enter") || pressed "s"
+
+            for i in [0]
+                console.log "Step"
                 Simulate().step()
 
         return
@@ -126,7 +131,7 @@ Simulate = ->
                         if villager.food > villager.capacity / 2
 
                             pos = getRandomNeighbour(villager.x, villager.y)
-                            if pos?
+                            if pos? && !isNearObject(pos)
                                 bush = new Bush( pos.x * TILE_SIZE, pos.y * TILE_SIZE, halfCap, villager.capacity)
                                 villager.food = halfCap
                                 tileMap.push bush
@@ -203,7 +208,7 @@ isNearObject = (pos)->
     for neighbour in neighbours
         items = tileMap.at(neighbour.x * TILE_SIZE, neighbour.y * TILE_SIZE)
         for item in items
-            if item.name == "bush" || item.name == "worker"
+            if item.name != undefined && item.name?
                 true
     false
 
@@ -214,10 +219,9 @@ removeObject = (x, y, name = "") ->
     count = 0
     if jaws.isArray(items) && items != undefined
         for item in items
-            if item.name == name
-                break
+            if item? && item.name == name
+                tileMap.cells[getTilePosx(x)][getTilePosy(y)].splice(count, 1)
             count++
-        tileMap.cells[getTilePosx(x)][getTilePosy(y)].splice(count, 1)
     return
 
 getRandPos = ->
@@ -328,7 +332,6 @@ class Worker
                     else 
                         dy = -1
 
-            console.log "#{dx}, #{dy}"
             @move(dx, dy)
         return
 
