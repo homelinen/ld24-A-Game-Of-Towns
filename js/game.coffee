@@ -1,3 +1,4 @@
+debugger
 
 tileMap = null
 TILE_SIZE = null
@@ -50,7 +51,6 @@ BuildState = ->
 
     @update = ->
         if jaws.pressed("left_mouse_button")
-            console.log "Click: #{jaws.mouse_x}, #{jaws.mouse_y}"
 
             for tile in tileMap.at(jaws.mouse_x, jaws.mouse_y)
                 if tile.name == "worker"
@@ -62,7 +62,6 @@ BuildState = ->
                 # Place a person
                 worker = new Worker(tilePos.x, tilePos.y, 50, 5)
 
-                console.log "Added worker"
                 tileMap.push(worker)
 
         if pressed("enter") || pressed "s"
@@ -70,6 +69,13 @@ BuildState = ->
 
             for i in [0..1]
                 Simulate().step()
+
+        allTiles = tileMap.all()
+        tilePeople = ""
+        for tile in allTiles
+            if tile.name == "worker"
+                tilePeople += "[#{tile.x}, #{tile.y}]<br />"
+        document.getElementById("villagers").innerHTML = tilePeople
         return
 
     @draw = ->
@@ -107,7 +113,6 @@ Simulate = ->
                     villager.update()
 
                     if workCount >= @villPop
-                        console.x "Villager: #{villager.x}, #{villager.y}"
                         village = new Sprite {
                             image: "img/village.png",
                             x: villager.x,
@@ -115,6 +120,7 @@ Simulate = ->
                         }
                         village.name = "village"
                         tileMap.push(village)
+                        console.log "Build a house #{villager.x}, #{villager.y}"
                         removeObject(villager.x, villager.y, "worker")
                 else
                     console.log "Villager died #{villager.x}, #{villager.y} Food: #{villager.food}"
@@ -263,20 +269,21 @@ class Worker
         return
 
     move: (x, y)->
-        # Move player
+        if @alive
+            # Move player
 
-        x *= TILE_SIZE
-        y *= TILE_SIZE
+            x *= TILE_SIZE
+            y *= TILE_SIZE
 
-        newX = getTilePosx( @sprite.x + x )
-        newY = getTilePosy( @sprite.y + y ) 
-        removeObject(@sprite.x, @sprite.y, "worker")
-        console.log "X: #{newX}, Y: #{newY}"
-        @sprite.move(x, y)
-        tileMap.push @sprite
+            newX = getTilePosx( @sprite.x + x )
+            newY = getTilePosy( @sprite.y + y ) 
+            removeObject(@sprite.x, @sprite.y, "worker")
+            console.log "X: #{newX}, Y: #{newY}"
+            @sprite.move(x, y)
+            @x = @sprite.x
+            @y = @sprite.y
+            tileMap.push @
 
-        @x = x
-        @y = y
         return
 
     walk: ->
