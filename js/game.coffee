@@ -121,7 +121,6 @@ Simulate = ->
                             village.name = "village"
                             village.alive = true
                             tileMap.push(village)
-                            console.log "Build a house #{villager.x}, #{villager.y}"
 
                             removeObject(villager.x, villager.y, "worker")
 
@@ -137,7 +136,6 @@ Simulate = ->
                                 tileMap.push bush
                 else
                     vname = villager.name
-                    console.log "#{vname} died #{villager.x}, #{villager.y}"
                     removeObject(villager.x, villager.y, vname)
         return
 
@@ -307,7 +305,6 @@ class Worker
             y *= TILE_SIZE
 
             pos =  getTileCorner(x + @sprite.x, @sprite.y + y)
-            console.log pos
 
             @sprite.moveTo(pos.x, pos.y)
             @x = @sprite.x
@@ -355,11 +352,11 @@ class Worker
                 @alive = false
 
         if @foodEaten > @maxFood * 0.8
-            console.log "A child should have birthed"
             pos = getRandomNeighbour(@x, @y)
             if pos? && !isNearObject(pos)
-                console.log "A child was born"
-                worker = new Worker(pos.x * TILE_SIZE, pos.y * TILE_SIZE, @carryWeight, @food / 2)
+                @food = @food / 2
+                worker = new Worker(pos.x * TILE_SIZE, pos.y * TILE_SIZE, @carryWeight, @food)
+
                 tileMap.push worker
 
     toString: ->
