@@ -28,7 +28,7 @@ Init = ->
     
             tilePos = getRandPos()
             
-            bushes.push new Bush(tilePos.x, tilePos.y, 10)
+            bushes.push new Bush(tilePos.x, tilePos.y, 5, 20)
 
         tileMap.push bushes
         jaws.switchGameState(BuildState)
@@ -85,7 +85,6 @@ Simulate = ->
         @workers()
 
     @workers = ->
-        # Have villagers do shit?
         for villager in tileMap.all()
 
             if villager.name != undefined 
@@ -117,7 +116,19 @@ Simulate = ->
                             village.alive = true
                             tileMap.push(village)
                             console.log "Build a house #{villager.x}, #{villager.y}"
+
                             removeObject(villager.x, villager.y, "worker")
+
+                    else if villager.name == "bush"
+                        villager.update()
+                        halfCap = villager.capacity * 0.2
+                        if villager.food > villager.capacity / 2
+
+                            pos = getRandomNeighbour(villager.x, villager.y)
+                            if pos?
+                                bush = new Bush( pos.x * TILE_SIZE, pos.y * TILE_SIZE, halfCap, villager.capacity)
+                                villager.food = halfCap
+                                tileMap.push bush
                 else
                     vname = villager.name
                     console.log "#{vname} died #{villager.x}, #{villager.y}"
@@ -170,6 +181,21 @@ getSurroundingCells = (pos) ->
         dx++
         tempx = x + dx
     tiles
+
+getRandomNeighbour = (x, y) ->
+    neighbours = getSurroundingTiles(x, y)
+
+    if neighbours.length > 0
+        divisor =  1 / (neighbours.length - 1)
+
+        rand = Math.random()
+
+        index = Math.floor(rand / divisor)
+
+        neighbour = neighbours[index]
+
+        return { x: neighbour.x, y: neighbour.y }
+    return
 
 isNearObject = (pos)->
     neighbours = getSurroundingCells(pos) 
@@ -324,7 +350,7 @@ class Worker
 class Bush
     # Food giving object
     # Food int representation of food provided
-    constructor: (xPos, yPos, @food) ->
+    constructor: (xPos, yPos, @food, @capacity) ->
         @sprite = new Sprite {
             image: "img/bush.png",
             x: xPos,
@@ -344,6 +370,11 @@ class Bush
             @food = 0
             @alive = false
             amount
+
+    update: ->
+        growth = @capacity / 25
+        if (@food + growth) < @capacity
+            @food += growth
 
     draw: ->
         @sprite.draw()

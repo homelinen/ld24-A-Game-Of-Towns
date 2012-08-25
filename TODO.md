@@ -10,3 +10,4 @@
 * Animate bushes to show food levels
 * Have bushes spawn as you play
 * Over farming destroys all food
+* Fully fed workers give birth
