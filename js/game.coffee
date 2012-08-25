@@ -91,13 +91,7 @@ Simulate = ->
                         x: object.x,
                         y: object.y
                     })
-                    items = tileMap.cells[getTilePos(object.x)][getTilePos(object.y)]
-                    count = 0
-                    for item in items
-                        if item.name == "worker"
-                            break
-                        count++
-                    items.slice(count, 1)
+                    removeWorker(object.x, object.y)
 
         if pressed "d"
             console.log tileMap.all()
@@ -156,9 +150,19 @@ getSurroundingCells = (pos) ->
         dx++
     tiles
 
+removeWorker = (x, y) ->
+    # Removes worker at point
+
+    items = tileMap.cells[getTilePos(x)][getTilePos(y)]
+    count = 0
+    for item in items
+        if item.name == "worker"
+            break
+        count++
+    items.slice(count, 1)
+
 getTilePos = (pos) -> 
     pos / TILE_SIZE
-
 
 getMapWidth = ->
         jaws.width / TILE_SIZE
