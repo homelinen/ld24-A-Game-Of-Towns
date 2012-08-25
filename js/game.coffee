@@ -46,8 +46,11 @@ BuildState = ->
             # Place a person
             worker = new Worker(jaws.mouse_x, jaws.mouse_y)
             tilePos = getTileFromPoint(worker.sprite.x, worker.sprite.y)
-            tileMap.push(worker)
-            console.log "In cell: #{tileMap.at(jaws.mouse_x, jaws.mouse_y)}"
+            for tile in tileMap.at(jaws.mouse_x, jaws.mouse_y)
+                if tile.name != "worker"
+
+                    console.log "Added worker"
+                    tileMap.push(worker)
 
     @draw = ->
         Init().draw()
@@ -69,6 +72,7 @@ class Worker
         }
         @x = @sprite.x
         @y = @sprite.y
+        @name = "worker"
     
     draw: ->
         @sprite.draw()
