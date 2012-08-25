@@ -205,6 +205,7 @@ class Worker
         @y = @sprite.y
         @name = "worker"
         @curWeight = @food
+        @foodEaten = 2 * @food
     
     draw: ->
         @sprite.draw()
@@ -224,14 +225,18 @@ class Worker
         @curWeight = 0
         
     eat: ->
-        if @food > 0
-            foodConsumed = 1
-            @food -= foodConsumed
-            @curWeight -= foodConsumed
+        @foodEaten -= 1
 
-        if @food <= 0
-            console.log "Starved"
-            @alive = false
+        if @foodEaten < 1
+            if @food > 0
+                foodConsumed = 1
+                @foodEaten += 2 * foodConsumed
+                @food -= foodConsumed
+                @curWeight -= foodConsumed
+
+            if @food <= 0
+                console.log "Starved"
+                @alive = false
 
     toString: ->
         return "#{@name}: #{@x}, #{@y}"
