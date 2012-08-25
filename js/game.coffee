@@ -1,5 +1,3 @@
-debugger
-
 tileMap = null
 TILE_SIZE = null
 
@@ -26,7 +24,7 @@ Init = ->
         tileMap.push tiles
 
         bushes = []
-        for bush in [0..4]
+        for bush in [0..10]
     
             tilePos = getRandPos()
             
@@ -70,11 +68,6 @@ BuildState = ->
             for i in [0..1]
                 Simulate().step()
 
-        allTiles = tileMap.all()
-        tilePeople = ""
-        for tile in allTiles
-            if tile.name == "worker"
-                tilePeople += "[#{tile.x}, #{tile.y}]<br />"
         return
 
     @draw = ->
@@ -92,7 +85,6 @@ Simulate = ->
         @workers()
 
     @workers = ->
-        console.log "Work"
         # Have villagers do shit?
         for villager in tileMap.all()
             workCount = 0
@@ -103,7 +95,7 @@ Simulate = ->
                         adjacent = getSurroundingTiles(villager.x, villager.y)
                         for point in adjacent
 
-                            tempTile = tileMap.cell(point.x, point.y)
+                            tempTile = tileMap.at(point.x * TILE_SIZE, point.y * TILE_SIZE)
                             # Loop through items at tile
                             for item in tempTile
                                 if  item.name == "worker"
@@ -120,14 +112,14 @@ Simulate = ->
                                 y: villager.y
                             }
                             village.name = "village"
+                            village.alive = true
                             tileMap.push(village)
                             console.log "Build a house #{villager.x}, #{villager.y}"
                             removeObject(villager.x, villager.y, "worker")
                 else
                     vname = villager.name
                     console.log "#{vname} died #{villager.x}, #{villager.y}"
-                    if vname == "worker" || vname == "bush"
-                        removeObject(villager.x, villager.y, vname)
+                    removeObject(villager.x, villager.y, vname)
         return
 
     return @
@@ -139,7 +131,6 @@ getTileCorner = (x, y) ->
     # Return Object with fields x and y
     xPos = (Math.floor getTilePosx(x)) * TILE_SIZE
     yPos = (Math.floor getTilePosy(y)) * TILE_SIZE
-    console.log "Corner: #{xPos}, #{yPos}"
     { x: xPos, y: yPos }
 
 getSurroundingTiles = (x, y) ->
@@ -165,23 +156,23 @@ getSurroundingCells = (pos) ->
     tempx = x + dx
     tempy = y + dy
     while dx < 2 && tempx >= 0 && tempx < mapWidth
-        tempx = x + dx
         while dy < 2 && tempy >= 0 && tempy < mapHeight
-            tempy = y + dy
             
-            if tempx == x || tempy == y
-                # Ensure not on a diagonal
+            if !(tempx == x && tempy == y) && (tempx == x || tempy == y) 
+                # Ensure not on a diagonal smf not given point
                 
                 tiles.push {x: tempx, y: tempy}
             dy++
+            tempy = y + dy
         dy = -1
         dx++
+        tempx = x + dx
     tiles
 
 isNearObject = (pos)->
     neighbours = getSurroundingCells(pos) 
     for neighbour in neighbours
-        items = tileMap.cell(neighbour.x, neighbour.y)
+        items = tileMap.at(neighbour.x * TILE_SIZE, neighbour.y * TILE_SIZE)
         for item in items
             if item.name == "bush" || item.name == "worker"
                 true
@@ -192,7 +183,7 @@ removeObject = (x, y, name = "") ->
 
     items = tileMap.at(x, y)
     count = 0
-    if jaws.isArray items
+    if jaws.isArray items && items != undefined
         for item in items
             if item.name == name
                 break
@@ -220,20 +211,21 @@ getRandBoolean = ->
 
 getTilePosx = (x) -> 
     x = getTilePos(x)
-    if x < 0
-        x = 0
-    else if x > getMapWidth()
-        x = getMapWidth()
+    x = getPosInLimits(x, getMapWidth())
     x
 
 getTilePosy = (y) ->
 
     y = getTilePos(y)
-    if y < 0
-        y = 0
-    else if y > getMapHeight()
-        y = getMapHeight()
+    y = getPosInLimits(y, getMapHeight())
     y
+
+getPosInLimits = (point, max) ->
+    if point < 0
+        point = 0
+    else if point >= max
+        point = max
+    point
 
 getTilePos = (pos) ->
     pos / TILE_SIZE
@@ -272,14 +264,15 @@ class Worker
         if @alive
             # Move player
 
+            # Discard old player
+            removeObject(@sprite.x, @sprite.y, "worker")
+
             x *= TILE_SIZE
             y *= TILE_SIZE
 
-            newX = getTilePosx( @sprite.x + x )
-            newY = getTilePosy( @sprite.y + y ) 
-            removeObject(@sprite.x, @sprite.y, "worker")
-            console.log "X: #{newX}, Y: #{newY}"
-            @sprite.move(x, y)
+            pos =  getTileCorner(x, y)
+
+            @sprite.move(pos.x, pos.y)
             @x = @sprite.x
             @y = @sprite.y
             tileMap.push @
