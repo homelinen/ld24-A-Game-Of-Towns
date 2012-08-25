@@ -7,6 +7,7 @@ Init = ->
     # Initialise things
 
     @setup = ->
+        viewport = new Viewport({})
         tiles = new SpriteList
         tile = "img/grass-tile.png"
         TILE_SIZE = 32
@@ -43,24 +44,34 @@ BuildState = ->
     @update = ->
         if jaws.pressed("left_mouse_button")
             console.log "Click: #{jaws.mouse_x}, #{jaws.mouse_y}"
-            # Place a person
-            worker = new Worker(jaws.mouse_x, jaws.mouse_y)
-            tilePos = getTileFromPoint(worker.sprite.x, worker.sprite.y)
-            for tile in tileMap.at(jaws.mouse_x, jaws.mouse_y)
-                if tile.name != "worker"
 
-                    console.log "Added worker"
-                    tileMap.push(worker)
+            for tile in tileMap.at(jaws.mouse_x, jaws.mouse_y)
+                if tile.name == "worker"
+                    workerPresent = yes
+
+            if !workerPresent
+                tilePos = getTileCorner(jaws.mouse_x, jaws.mouse_y)
+                # Place a person
+                worker = new Worker(tilePos.x, tilePos.y)
+
+                console.log "Added worker"
+                tileMap.push(worker)
 
     @draw = ->
         Init().draw()
         return
     return @
 
-getTileFromPoint = (x, y) ->
-    xPos = x / TILE_SIZE
-    yPos = y / TILE_SIZE
+getTileCorner = (x, y) ->
+    # Get the top corner of a cell
+    # x xPosition
+    # y yPosition
+    # Return Object with fields x and y
+    xPos = (Math.floor x / TILE_SIZE) * TILE_SIZE
+    yPos = (Math.floor y / TILE_SIZE) * TILE_SIZE
+    console.log "Corner: #{xPos}, #{yPos}"
     { x: xPos, y: yPos }
+
     
 class Worker
     constructor: (xPos, yPos) ->
@@ -83,7 +94,7 @@ class Worker
         @y = sprite.y
 
     toString: ->
-        return "Worker: #{@x}, #{@y}"
+        return "#{@name}: #{@x}, #{@y}"
 
 jaws.onload = ->
     jaws.unpack()
