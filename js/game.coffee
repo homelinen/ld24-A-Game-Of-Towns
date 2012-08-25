@@ -306,9 +306,10 @@ class Worker
             x *= TILE_SIZE
             y *= TILE_SIZE
 
-            pos =  getTileCorner(x, y)
+            pos =  getTileCorner(x + @sprite.x, @sprite.y + y)
+            console.log pos
 
-            @sprite.move(pos.x, pos.y)
+            @sprite.moveTo(pos.x, pos.y)
             @x = @sprite.x
             @y = @sprite.y
             tileMap.push @
@@ -354,9 +355,12 @@ class Worker
                 @alive = false
 
         if @foodEaten > @maxFood * 0.8
+            console.log "A child should have birthed"
             pos = getRandomNeighbour(@x, @y)
-            if pos?
-                worker = new Worker(pos.x, pos.y, @carryWeight, @food / 2)
+            if pos? && !isNearObject(pos)
+                console.log "A child was born"
+                worker = new Worker(pos.x * TILE_SIZE, pos.y * TILE_SIZE, @carryWeight, @food / 2)
+                tileMap.push worker
 
     toString: ->
         return "#{@name}: #{@x}, #{@y}"
