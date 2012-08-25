@@ -27,10 +27,9 @@ Init = ->
         bushes = []
         for bush in [0..4]
     
-            tilePos = getTileCorner getRand(jaws.width), getRand(jaws.height)
-            console.log "Pos: " + tilePos + "Rand: " + Math.random()
+            tilePos = getRandPos()
             
-            bushes.push new Bush(tilePos.x, tilePos.y, 5)
+            bushes.push new Bush(tilePos.x, tilePos.y, 10)
 
         tileMap.push bushes
         jaws.switchGameState(BuildState)
@@ -68,8 +67,9 @@ BuildState = ->
         if pressed("enter") || pressed "s"
             console.log "Simulate"
 
-            for i in [0..5]
+            for i in [0..0]
                 Simulate().step()
+        return
 
     @draw = ->
         Init().draw()
@@ -135,7 +135,6 @@ getSurroundingTiles = (x, y) ->
     
     getSurroundingCells {x: x, y: y}
 
-
 getSurroundingCells = (pos) ->
     # Get tiles for the cell represented by obj:
     # {x, y}
@@ -166,16 +165,30 @@ getSurroundingCells = (pos) ->
         dx++
     tiles
 
+isNearFood = (pos)->
+    neighbours = getSurroundingCells(pos) 
+    for neighbour in neighbours
+        items = tileMap.cell(neighbour.x, neighbour.y)
+        for item in items
+            if item.name == "bush"
+                true
+    false
+
 removeWorker = (x, y) ->
     # Removes worker at point
 
     items = tileMap.cells[getTilePos(x)][getTilePos(y)]
     count = 0
-    for item in items
-        if item.name == "worker"
-            break
-        count++
-    tileMap.cells[getTilePos(x)][getTilePos(y)].splice(count, 1)
+    if jaws.isArray items
+        for item in items
+            if item.name == "worker"
+                break
+            count++
+        tileMap.cells[getTilePos(x)][getTilePos(y)].splice(count, 1)
+    return
+
+getRandPos = ->
+    getTileCorner getRand(jaws.width), getRand(jaws.height)
 
 getRand = (max) ->
     rand = Math.random()
@@ -185,13 +198,23 @@ getRand = (max) ->
 
     rand
 
+getRandBoolean = ->
+    rand = Math.random() 
+    if rand > 0.5 
+        true
+    else 
+        false
+
 getTilePos = (pos) -> 
     pos / TILE_SIZE
 
+getPoint = (x, y) ->
+    return { x: getTilePos(x), y: getTilePos(y) }
+
 getMapWidth = ->
-        jaws.width / TILE_SIZE
+    jaws.width / TILE_SIZE
 getMapHeight = ->
-        jaws.height / TILE_SIZE
+    jaws.height / TILE_SIZE
 
 class Worker
     constructor: (xPos, yPos, @carryWeight, @food) ->
@@ -213,12 +236,40 @@ class Worker
     update: ->
         # Horrible duplication
         @eat()
+        @walk()
+        return
 
     move: (x, y)->
         # Move player
+
+        console.log "Moved: <#{x}, #{y}>"
+        x *= TILE_SIZE
+        y *= TILE_SIZE
         @sprite.move(x, y)
+        removeWorker(@sprite.x, @sprite.y)
+        tileMap.push @sprite
+
         @x = x
         @y = y
+        return
+
+    walk: ->
+        if (!isNearFood( getPoint(@sprite.x, @sprite.y) ))
+            dx = 0
+            dy = 0
+            if getRandBoolean() 
+                if getRandBoolean()
+                    dx = 1
+                else
+                    dx = -1
+            else
+                if getRandBoolean()
+                    dy = 1
+                else 
+                    dy = -1
+
+            @move(dx, dy)
+        return
 
     gather: (bush) ->
         @food += bush.gather @carryWeight - @curWeight
