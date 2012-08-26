@@ -339,16 +339,16 @@ createLake = (size) ->
 
 getRandPos = ->
     # Get a random Vector
-    getTileCorner getRand(jaws.width), getRand(jaws.height)
+    rx = getRand jaws.width / TILE_SIZE
+    ry = getRand jaws.height / TILE_SIZE
+    rx = Math.round(rx) * TILE_SIZE
+    ry = Math.round(ry) * TILE_SIZE
+    getTileCorner rx, ry
 
-getRand = (max) ->
+getRand = (mult) ->
     # Get a random integer that is less than the max
     rand = Math.random()
-    mult = 10
-    while rand * mult < max
-        rand *= mult
-
-    rand
+    rand *= mult
 
 getRandBoolean = ->
     rand = Math.random() 
