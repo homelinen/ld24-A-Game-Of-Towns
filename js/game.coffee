@@ -146,8 +146,8 @@ Simulate = ->
 
                         if workCount >= @villPop
                             # Replace worker with a village
-                            createVillage(item.x, item.y)
                             removeObject(item.x, item.y, "worker")
+                            createVillage(item.x, item.y)
                             vilLim++
                     else if item.name == "bush"
                         item.update()
@@ -287,7 +287,7 @@ getRandomNeighbour = (x, y) ->
 isCellOccupied = (pos, tiles = tileMap) ->
     # Decide if the cell is passable
 
-    cell = tile * TILE_SIZEs.cell(pos.x, pos.y)
+    cell = tiles.cell(pos.x, pos.y)
     for item in cell
         if item.name != undefined && item.name?
             return true
@@ -427,8 +427,9 @@ class Worker
             y *= TILE_SIZE
 
             pos =  getTileCorner(x + @sprite.x, @sprite.y + y)
+            cellPos = getPoint(pos.x, pos.y)
 
-            if !isCellOccupied(pos)
+            if !isCellOccupied(cellPos)
                 # Discard old player
                 removeObject(@sprite.x, @sprite.y, "worker")
 
@@ -524,7 +525,7 @@ class Bush
         if @food > @capacity / 2
 
             pos = getRandomNeighbour(@x, @y)
-            if pos? && !isCellOccuped(pos)
+            if pos? && !isCellOccupied(pos)
                 bush = new Bush( pos.x * TILE_SIZE, pos.y * TILE_SIZE, halfCap, @capacity)
                 @food = halfCap
                 tileMap.push bush
