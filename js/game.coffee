@@ -38,30 +38,35 @@ Init = ->
         # tiles.draw()
         for tile in tileMap.all()
             tile.draw()
+        return
 
     return @
 
 BuildState = ->
     # Creation of the village through a map editor
+    fps = document.getElementById("fps").innerHTML
 
     @setup = ->
+        @villagerLimit = 4
         return
 
     @update = ->
         if jaws.pressed "left_mouse_button"
             workerPresent = no
 
+            console.log @villagerLimit
             for tile in tileMap.at(jaws.mouse_x, jaws.mouse_y)
                 if tile.name == "worker"
                     workerPresent = yes
                     break
 
-            if !workerPresent
+            if !workerPresent && @villagerLimit > 0  
                 tilePos = getTileCorner(jaws.mouse_x, jaws.mouse_y)
                 # Place a person
                 worker = new Worker(tilePos.x, tilePos.y, 50, 5)
 
                 tileMap.push(worker)
+                @villagerLimit--
 
         if jaws.pressed "right_mouse_button"
 
@@ -72,12 +77,13 @@ BuildState = ->
 
             for i in [0]
                 console.log "Step"
-                Simulate().step()
+                @villagerLimit = Simulate(@villerLimit).step()
 
         return
 
     @draw = ->
         Init().draw()
+        fps = "Fps: " + jaws.game_loop.fps
         return
     return @
 
@@ -87,10 +93,11 @@ Simulate = ->
     @step = ->
         # Maybe make a param?
         
-        @villPop = 3
+        @villPop = 4
         @workers()
 
     @workers = ->
+        vilLim = 0
         for villager in tileMap.all()
 
             if villager.name != undefined 
@@ -123,7 +130,7 @@ Simulate = ->
                             tileMap.push(village)
 
                             removeObject(villager.x, villager.y, "worker")
-
+                            vilLim++
                     else if villager.name == "bush"
                         villager.update()
                         halfCap = villager.capacity * 0.2
@@ -137,7 +144,7 @@ Simulate = ->
                 else
                     vname = villager.name
                     removeObject(villager.x, villager.y, vname)
-        return
+        vilLim
 
     return @
 
