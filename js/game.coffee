@@ -334,11 +334,13 @@ class Worker
         return
 
     gather: (bush) ->
-        @food += bush.gather @carryWeight - @curWeight
-        @curWeight = 0
+        if @curWeight < @carryWeight
+            gathered = bush.gather @carryWeight - @curWeight
+            @curWeight += gathered
+            @food += gathered
         
     eat: ->
-        @foodEaten -= @maxFood / 8
+        @foodEaten -= 1
 
         if @foodEaten < @maxFood
             if @food > 0
