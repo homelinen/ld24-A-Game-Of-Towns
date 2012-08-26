@@ -44,7 +44,7 @@ Init = ->
 
 BuildState = ->
     # Creation of the village through a map editor
-    fps = document.getElementById("fps").innerHTML
+    fps = document.getElementById("fps")
 
     @setup = ->
         @villagerLimit = 4
@@ -79,11 +79,11 @@ BuildState = ->
                 console.log "Step"
                 @villagerLimit = Simulate(@villerLimit).step()
 
+        fps.innerHTML = "Fps: " + jaws.game_loop.fps
         return
 
     @draw = ->
         Init().draw()
-        fps = "Fps: " + jaws.game_loop.fps
         return
     return @
 
@@ -363,7 +363,7 @@ class Worker
         if @foodEaten > @maxFood * 0.8
             pos = getRandomNeighbour(@x, @y)
             if pos? && !isNearObject(pos)
-                @food = @food / 2
+                @food = @food / 3
                 worker = new Worker(pos.x * TILE_SIZE, pos.y * TILE_SIZE, @carryWeight, @food)
 
                 tileMap.push worker
