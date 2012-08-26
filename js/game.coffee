@@ -76,19 +76,36 @@ BuildState = ->
 
         if pressed("enter") || pressed "s"
 
-            console.log "Vil Limit: " + @villagerLimit
-            for i in [0..10]
-                console.log "Step"
-                @villagerLimit = Simulate().step(@villagerLimit)
+            @villagerLimit = Simulate().step(@villagerLimit)
 
             if @villagerLimit > @maxVillagers
                 @villagerLimit = @maxVillagers
+
+        if pressed("d")
+            console.log "Debug"
+            found = false
+            for x in [0..99]
+                for y in [0..99]
+                    tile = tileMap.cell(x, y)
+                    for item in tile
+                        if item.name != undefined
+                            console.log "Name: #{item.name}"
+                            found = true
+                    if found 
+
+                        console.log "Point: <#{x}, #{y}>"
+                        found = false
+
         fps.innerHTML = "Fps: " + jaws.game_loop.fps
         return
 
     @draw = ->
         Init().draw()
         return
+
+    @drawHud = ->
+        # Graphical Overlay with some information
+        makeText
     return @
 
 Simulate = ->
@@ -126,7 +143,7 @@ Simulate = ->
 
                         villager.update()
 
-                        if workCount >= @villPop
+                        if workCount >= @villPop && !isNearObject(villager.x, villager.y)
                             village = new Sprite {
                                 image: "img/village.png",
                                 x: villager.x,
@@ -440,7 +457,6 @@ class Worker
                 @curWeight -= foodConsumed
 
             if @foodEaten <= 0
-                console.log "Starved"
                 @alive = false
 
         if @foodEaten > @maxFood * 0.8
@@ -494,5 +510,5 @@ jaws.onload = ->
     jaws.assets.add("img/bush.png")
     #jaws.assets.loadAll()
 
-    jaws.start GameOver
+    jaws.start Init
     return
