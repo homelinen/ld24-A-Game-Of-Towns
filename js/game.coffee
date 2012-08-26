@@ -45,8 +45,10 @@ Init = ->
 BuildState = ->
     # Creation of the village through a map editor
     fps = document.getElementById("fps")
+    simulator = null
 
     @setup = ->
+        @maxVillagers = 10
         @villagerLimit = 4
         return
 
@@ -54,7 +56,6 @@ BuildState = ->
         if jaws.pressed "left_mouse_button"
             workerPresent = no
 
-            console.log @villagerLimit
             for tile in tileMap.at(jaws.mouse_x, jaws.mouse_y)
                 if tile.name == "worker"
                     workerPresent = yes
@@ -71,14 +72,17 @@ BuildState = ->
         if jaws.pressed "right_mouse_button"
 
             tilePos = getTileCorner(jaws.mouse_x, jaws.mouse_y)
-            removeObject(tilePos.x, tilePos.y, "worker")
+            removeAllObjects(tilePos.x, tilePos.y)
 
         if pressed("enter") || pressed "s"
 
-            for i in [0]
+            console.log "Vil Limit: " + @villagerLimit
+            for i in [0..10]
                 console.log "Step"
-                @villagerLimit = Simulate(@villerLimit).step()
+                @villagerLimit = Simulate().step(@villagerLimit)
 
+            if @villagerLimit > @maxVillagers
+                @villagerLimit = @maxVillagers
         fps.innerHTML = "Fps: " + jaws.game_loop.fps
         return
 
@@ -90,19 +94,22 @@ BuildState = ->
 Simulate = ->
     #Runs a simulation of the villagers
 
-    @step = ->
+    @step = (vilLim) ->
         # Maybe make a param?
         
         @villPop = 4
-        @workers()
+        vilLim = @workers(vilLim)
 
-    @workers = ->
-        vilLim = 0
-        for villager in tileMap.all()
+    @workers = (vilLim)->
+        villagerCount = 0
+        
+        allTiles = tileMap.all()
+        for villager in allTiles
 
             if villager.name != undefined 
                 if villager.alive
                     if villager.name == "worker"
+                        villagerCount++
                         workCount = 0
                         adjacent = getSurroundingTiles(villager.x, villager.y)
                         for point in adjacent
@@ -144,9 +151,71 @@ Simulate = ->
                 else
                     vname = villager.name
                     removeObject(villager.x, villager.y, vname)
+
+        @totalVillagersPlaced += villagerCount
+        if villagerCount < 1 && vilLim < 1
+            jaws.switchGameState(GameOver)
+
         vilLim
 
     return @
+
+GameOver = ->
+    # Game over menu State
+
+    items = null
+    itemIndex = 0
+    @setup = ->
+        items = [
+            { title: "Game Over", state: null },
+            { title: "Restart", state: Init }
+        ]
+        itemIndex = 0
+        
+        # Key bindings
+        jaws.on_keydown(["down", "s"], -> 
+            if itemIndex + 1 < items.length
+                itemIndex++
+        )
+        jaws.on_keydown(["up", "w"], ->
+            if itemIndex - 1 >= 0
+                itemIndex--
+        )
+        jaws.on_keydown(["enter", "space", "e"], ->
+            item = items[itemIndex]
+            if item.state?
+                jaws.switchGameState(item.state)
+        )
+        return
+
+    @draw = ->
+        jaws.context.clearRect(0, 0, jaws.width, jaws.height)
+
+        grad = jaws.context.createLinearGradient(
+            0, jaws.height,
+            0, 0
+        )
+
+        grad.addColorStop(0.0, "#222")
+        grad.addColorStop(1.0, "#e4e4e4")
+        jaws.context.fillStyle = grad
+        jaws.context.fillRect(0, 0, jaws.width, jaws.height)
+
+        # Font setup
+        jaws.context.font = "5em sans-serif"
+        jaws.context.lineWidth = 2
+        jaws.context.textAlign = "center"
+
+        i = 0
+        while i < items.length
+
+            colour = if i == itemIndex then "Red" else "Black"
+            jaws.context.fillStyle = colour
+            jaws.context.fillText(items[i].title, jaws.width / 2, (200 + 100 * i))
+            i++
+
+        return
+    return @ 
 
 getTileCorner = (x, y) ->
     # Get the top corner of a cell
@@ -227,6 +296,20 @@ removeObject = (x, y, name = "") ->
             if item? && item.name == name
                 tileMap.cells[getTilePosx(x)][getTilePosy(y)].splice(count, 1)
             count++
+    return
+
+removeAllObjects = (x, y) ->
+    # Remove all the objects in a cell
+    
+    items = tileMap.at(x, y)
+
+    count = 0
+    if jaws.isArray(items) && items != undefined
+        for item in items
+            if item? && item.name != undefined
+                tileMap.cells[getTilePosx(x)][getTilePosy(y)].splice(count, 1)
+            count++
+
     return
 
 getRandPos = ->
@@ -411,5 +494,5 @@ jaws.onload = ->
     jaws.assets.add("img/bush.png")
     #jaws.assets.loadAll()
 
-    jaws.start Init
+    jaws.start GameOver
     return
