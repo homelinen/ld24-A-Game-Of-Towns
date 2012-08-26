@@ -28,7 +28,7 @@ Init = ->
     
             tilePos = getRandPos()
             
-            bushes.push new Bush(tilePos.x, tilePos.y, 5, 20)
+            bushes.push new Bush(tilePos.x, tilePos.y, 2, 20)
 
         tileMap.push bushes
         jaws.switchGameState(BuildState)
@@ -117,6 +117,16 @@ Simulate = ->
         
         @villPop = 4
         vilLim = @workers(vilLim)
+
+
+        randPos = getRandPos()
+        if isAreaFlammable getCellPos(randPos)
+            # Time out on random fires
+            console.log "Fire started"
+            fire = new Fire(randPos.x, randPos.y)
+            tileMap.push fire
+
+        return vilLim
 
     @workers = (vilLim)->
         villagerCount = 0
@@ -343,6 +353,7 @@ createVillage = (x, y) ->
         }
         village.name = "village"
         village.alive = true
+        village.isFlammable = true
         tileMap.push(village)
     return
 
@@ -365,15 +376,28 @@ getRandBoolean = ->
         false
 
 getTilePosx = (x) -> 
-    x = getTilePos(x)
+    x = getTileComp(x)
     x = getPosInLimits(x, getMapWidth())
     x
 
 getTilePosy = (y) ->
-
-    y = getTilePos(y)
+    y = getTileComp(y)
     y = getPosInLimits(y, getMapHeight())
     y
+
+getTileComp = (comp)  ->
+    # Transform the given screen position to a tile position
+    comp / TILE_SIZE
+
+isAreaFlammable = (pos) ->
+    neighbours = getNeighbours(pos)
+    count = 0
+
+    for neighbour in neighbours
+        if neighbour.isFlammable != undefined && neighbour.isFlammable
+            count++
+
+    return count >= 4
 
 getPosInLimits = (point, max) ->
     if point < 0
@@ -382,8 +406,10 @@ getPosInLimits = (point, max) ->
         point = max
     point
 
-getTilePos = (pos) ->
-    pos / TILE_SIZE
+getCellPos = (pos) ->
+    # Get the Vector for a cell position
+     
+    return { x: getTilePosx(pos.x), y: getTilePosy(pos.y) }
 
 getPoint = (x, y) ->
     return { x: getTilePosx(x), y: getTilePosy(y) }
@@ -502,6 +528,7 @@ class Bush
         @x = @sprite.x
         @y = @sprite.y
         @name = "bush"
+        @isFlammable = yes
 
     gather: (amount) ->
         if (@food - amount) > 0
@@ -533,6 +560,41 @@ class Bush
 
     draw: ->
         @sprite.draw()
+
+class Fire
+    # Fire class, burns everything around it
+    
+    constructor: (x, y) ->
+        @sprite = new Sprite {
+            image: "img/fire.png",
+            x: x,
+            y: y
+        }
+        @x = @sprite.x
+        @y = @sprite.y
+
+        @burn()
+        
+    burn: ->
+        pos = getPoint(@x, @y)
+        console.log pos
+        if isCellOccupied(pos)
+            tilePos = getTileCorner pos.x, pos.y
+            removeAllObjects(tilePos.x, tilePos.y)
+            # Add self back to map
+            tileMap.push @
+        return
+
+    spread: ->
+        pos = getRandomNeighbour(@x, @y)
+
+        if pos? && isAreaFlammable(pos)
+            fire = new Fire(pos.x * TILE_SIZE, pos.y * TILE_SIZE)
+            tileMap.push fire
+
+    draw: ->
+        @sprite.draw()
+        return
 
 jaws.onload = ->
     jaws.unpack()
