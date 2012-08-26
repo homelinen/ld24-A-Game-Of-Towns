@@ -60,7 +60,7 @@ Init = ->
 BuildState = ->
     # Creation of the village through a map editor
     fps = document.getElementById("fps")
-    simulator = null
+    simulate = true
 
     @setup = ->
         @maxVillagers = 10
@@ -89,12 +89,17 @@ BuildState = ->
             tilePos = getTileCorner(jaws.mouse_x, jaws.mouse_y)
             removeAllObjects(tilePos.x, tilePos.y)
 
-        if pressed("enter") || pressed "s"
-
+        if simulate
+            console.log "Step"
+            simulate = false
             @villagerLimit = Simulate().step(@villagerLimit)
 
             if @villagerLimit > @maxVillagers
                 @villagerLimit = @maxVillagers
+            setTimeout(->
+                simulate = true
+                return
+            , 1000)
 
         fps.innerHTML = "Fps: " + jaws.game_loop.fps
         return
