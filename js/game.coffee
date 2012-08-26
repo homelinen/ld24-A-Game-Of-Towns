@@ -325,28 +325,16 @@ createVillage = (x, y) ->
     return
 
 createLake = (size) ->
-    pos = getCellPos getRandPos()
+    pos = getRandPos()
 
-    neighbours =[ pos ] 
+    for i in [0..size]
+        cell = getNextPassableCell(pos.x, pos.y)
 
-    count = 0
+        water = new Water cell.x, cell.y
 
-    length = neighbours.length
-    while count < size && length > 0 && pos?
-        spliced = neighbours.splice 0, 1
-        if spliced.length > 0
-            pos = spliced[0]
-        else
-            break
-        sPos = getScreenFromVec pos
-        water = new Water sPos.x, sPos.y
-        console.log "Pos: #{pos.x}, #{pos.y} sPos: #{sPos.x}, #{sPos.y}"
-        
         tileMap.push water
+        pos = cell
 
-        neighbours = neighbours.concat getSurroundingCells(pos)
-        length = neighbours.length
-        count++
     return
 
 getRandPos = ->
