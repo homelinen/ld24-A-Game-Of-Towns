@@ -421,6 +421,43 @@ getMapWidth = ->
 getMapHeight = ->
     jaws.height / TILE_SIZE
 
+getRandomDirection = ->
+    # Returns a vector that represents a direction
+    dx = 0
+    dy = 0
+    while dx == 0 && dy == 0
+        if getRandBoolean() 
+            dx = getRandomSign()
+        else
+            dy = getRandomSign()
+    makePoint(dx, dy)
+
+getRandomSign = ->
+    # Returns either 1 or -1
+    if getRandBoolean()
+        num = 1
+    else 
+        num = -1
+
+getNextCell = (curX, curY, depth = 0)->
+    # Returns a random cell adjacent to the 
+
+    # 4 is the number of adjacent cells
+    if depth < 4
+        dir = getRandomDirection()
+        x = dir.x * TILE_SIZE
+        y = dir.y * TILE_SIZE
+
+        pos =  getTileCorner(x + curX, y + curY)
+        cellPos = getPoint(pos.x, pos.y)
+
+        if !isCellOccupied(cellPos)
+            return pos
+        else
+            depth += 1
+            return getNextCell(curX, curY, depth)
+    return
+
 class Worker
     constructor: (xPos, yPos, @carryWeight, @food) ->
         @alive = true
@@ -443,47 +480,22 @@ class Worker
 
     update: ->
         @eat()
-        @walk()
+        @move()
         return
 
-    move: (x, y)->
+    move: ->
         if @alive
             # Move player
 
-            x *= TILE_SIZE
-            y *= TILE_SIZE
-
-            pos =  getTileCorner(x + @sprite.x, @sprite.y + y)
-            cellPos = getPoint(pos.x, pos.y)
-
-            if !isCellOccupied(cellPos)
-                # Discard old player
+            cell = getNextCell(@sprite.x, @sprite.y)
+            if cell?
                 removeObject(@sprite.x, @sprite.y, "worker")
 
-                @sprite.moveTo(pos.x, pos.y)
+                @sprite.moveTo(cell.x, cell.y)
                 @x = @sprite.x
                 @y = @sprite.y
                 tileMap.push @
 
-        return
-
-    walk: ->
-        dx = 0
-        dy = 0
-        while dx == 0 && dy == 0
-            if getRandBoolean() 
-                if getRandBoolean()
-                    dx = 1
-                else
-                    dx = -1
-
-            else
-                if getRandBoolean()
-                    dy = 1
-                else 
-                    dy = -1
-
-        @move(dx, dy)
         return
 
     gather: (bush) ->
@@ -594,6 +606,8 @@ class Fire
 
     spread: ->
         pos = getRandomNeighbour(@x, @y)
+        console.log "Fire"
+        console.log pos
 
         if pos? && isCellOccupied(pos)
             fire = new Fire(pos.x * TILE_SIZE, pos.y * TILE_SIZE, @heat)
