@@ -439,24 +439,27 @@ getRandomSign = ->
     else 
         num = -1
 
-getNextCell = (curX, curY, depth = 0)->
+getNextCell = (curX, curY)->
     # Returns a random cell adjacent to the 
 
+    dir = getRandomDirection()
+    x = dir.x * TILE_SIZE
+    y = dir.y * TILE_SIZE
+
+    pos =  getTileCorner(x + curX, y + curY)
+    pos
+
+getNextPassableCell = (curX, curY, depth = 0) ->
+
     # 4 is the number of adjacent cells
+    pos = getNextCell(curX, curY)
     if depth < 4
-        dir = getRandomDirection()
-        x = dir.x * TILE_SIZE
-        y = dir.y * TILE_SIZE
-
-        pos =  getTileCorner(x + curX, y + curY)
         cellPos = getPoint(pos.x, pos.y)
-
         if !isCellOccupied(cellPos)
             return pos
         else
             depth += 1
-            return getNextCell(curX, curY, depth)
-    return
+            return getNextPassableCell(curX, curY, depth)
 
 class Worker
     constructor: (xPos, yPos, @carryWeight, @food) ->
@@ -487,7 +490,7 @@ class Worker
         if @alive
             # Move player
 
-            cell = getNextCell(@sprite.x, @sprite.y)
+            cell = getNextPassableCell(@sprite.x, @sprite.y)
             if cell?
                 removeObject(@sprite.x, @sprite.y, "worker")
 
@@ -564,9 +567,9 @@ class Bush
         halfCap = @capacity * 0.2
         if @food > @capacity / 2
 
-            pos = getRandomNeighbour(@x, @y)
-            if pos? && !isCellOccupied(pos)
-                bush = new Bush( pos.x * TILE_SIZE, pos.y * TILE_SIZE, halfCap, @capacity)
+            pos = getNextPassableCell(@sprite.x, @sprite.y)
+            if pos?
+                bush = new Bush( pos.x, pos.y, halfCap, @capacity)
                 @food = halfCap
                 tileMap.push bush
         return
@@ -605,12 +608,10 @@ class Fire
         return
 
     spread: ->
-        pos = getRandomNeighbour(@x, @y)
-        console.log "Fire"
-        console.log pos
+        pos = getNextCell(@sprite.x, @sprite.y)
 
-        if pos? && isCellOccupied(pos)
-            fire = new Fire(pos.x * TILE_SIZE, pos.y * TILE_SIZE, @heat)
+        if pos? && isCellOccupied(getCellPos pos)
+            fire = new Fire(pos.x, pos.y, @heat)
             tileMap.push fire
         return
 
