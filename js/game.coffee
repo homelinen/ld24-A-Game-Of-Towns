@@ -33,12 +33,16 @@ Init = ->
 
         tileMap = new TileMap { cell_size: [TILE_SIZE,TILE_SIZE] }
         tileMap.push tiles
+        createLake(5)
 
         bushes = []
         for bush in [0..10]
     
             tilePos = getRandPos()
             
+            while isCellOccupied tilePos
+                tilePos = getRandPos()
+
             bushes.push new Bush(tilePos.x, tilePos.y, 2, 20)
 
         tileMap.push bushes
@@ -244,7 +248,9 @@ GameOver = ->
         return
     return @ 
     
-getTileCorner = (x, y) -> # Get the top corner of a cell # x xPosition on the grid
+getTileCorner = (x, y) -> 
+    # Get the top corner of a cell 
+    # x xPosition on the grid
     # y yPosition on the grid
     # Return Object with fields x and y
     xPos = (Math.floor getTilePosx(x)) * TILE_SIZE
@@ -254,9 +260,9 @@ getTileCorner = (x, y) -> # Get the top corner of a cell # x xPosition on the gr
 getScreenFromVec = (pos) ->
     # Get the top corner of a cell
     # pos: Vector 
-    pos.x *= TILE_SIZE
-    pos.y *= TILE_SIZE
-    pos
+    x = pos.x * TILE_SIZE
+    y = pos.y * TILE_SIZE
+    {x: x, y: y}
 
 getSurroundingTiles = (x, y) ->
     x = getTilePosx(x)
@@ -366,6 +372,17 @@ removeAllAtVec = (pos) ->
     pos = getScreenFromVec pos
     removeAllObjects pos.x, pos.y
 
+removeEverything = (pos) ->
+    x = pos.x
+    y = pos.y
+    items = tileMap.at(x, y)
+    count = 0
+    if jaws.isArray(items) && items != undefined
+        for item in items
+            if item?
+                tileMap.cells[getTilePosx(x)][getTilePosy(y)].splice(count, 1)
+            count++
+
 createVillage = (x, y) ->
     if !isCellOccupied(getPoint(x, y))
         village = new Sprite {
@@ -379,7 +396,33 @@ createVillage = (x, y) ->
         tileMap.push(village)
     return
 
+createLake = (size) ->
+    pos = getCellPos getRandPos()
+
+    neighbours =[ pos ] 
+
+    count = 0
+
+    length = neighbours.length
+    while count < size && length > 0 && pos?
+        spliced = neighbours.splice 0, 1
+        if spliced.length > 0
+            pos = spliced[0]
+        else
+            break
+        sPos = getScreenFromVec pos
+        water = new Water sPos.x, sPos.y
+        console.log "Pos: #{pos.x}, #{pos.y} sPos: #{sPos.x}, #{sPos.y}"
+        
+        tileMap.push water
+
+        neighbours = neighbours.concat getSurroundingCells(pos)
+        length = neighbours.length
+        count++
+    return
+
 getRandPos = ->
+    # Get a random Vector
     getTileCorner getRand(jaws.width), getRand(jaws.height)
 
 getRand = (max) ->
@@ -630,6 +673,23 @@ class Fire
         @sprite.draw()
         return
 
+class Water
+    
+    constructor: (x, y) ->
+        @sprite = new Sprite {
+            image: "img/water.png",
+            x: x,
+            y: y,
+        }
+        @name = "water"
+        @alive = true
+
+        @x = @sprite.x
+        @y = @sprite.y
+
+    draw: ->
+        @sprite.draw()
+
 jaws.onload = ->
     jaws.unpack()
     jaws.assets.add("img/grass-tile.png")
@@ -637,6 +697,7 @@ jaws.onload = ->
     jaws.assets.add("img/village.png")
     jaws.assets.add("img/bush.png")
     jaws.assets.add("img/fire.png")
+    jaws.assets.add("img/water.png")
     #jaws.assets.loadAll()
 
     jaws.start Init
