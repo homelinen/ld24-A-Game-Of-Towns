@@ -8,3 +8,7 @@
 * Day/night? Villagers need villages to survive
 * Villages shouldn't be as tightly packed
 * Villages need a purpose
+* Enemies that attack
+* Upgraadeable buildings
+* Tightly trapped buildings should be destroyed
+* Can't fill whole screen with people
