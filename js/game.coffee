@@ -144,13 +144,16 @@ Simulate = ->
 
                         item.update()
 
-                        if workCount >= @villPop && !isNearObject(item.x, item.y)
+                        if workCount >= @villPop
                             # Replace worker with a village
                             createVillage(item.x, item.y)
                             removeObject(item.x, item.y, "worker")
                             vilLim++
                     else if item.name == "bush"
                         item.update()
+                    else if item.name == "village"
+                        getNeighbours(item.x, item.y)
+
                 else
                     # Otherwise dead
                     vname = item.name
@@ -281,14 +284,27 @@ getRandomNeighbour = (x, y) ->
         return { x: neighbour.x, y: neighbour.y }
     return
 
-isNearObject = (pos)->
-    neighbours = getSurroundingCells(pos) 
-    for neighbour in neighbours
+isCellOccupied = (pos) ->
+    # Decide if the cell is passable
+
+    cell = tileMap.cell(pos.x, pos.y)
+    for item in cell
+        if item.name != undefined && item.name?
+            return true
+    return false
+
+getNeighbours = (pos) ->
+    # Return all the named items in a cell
+
+    neighbours = []
+    adjacentCells = getSurroundingCells(pos) 
+    for neighbour in adjacentCells
         items = tileMap.at(neighbour.x * TILE_SIZE, neighbour.y * TILE_SIZE)
         for item in items
             if item.name != undefined && item.name?
-                true
-    false
+                neighbours.push item
+
+    neighbours
 
 removeObject = (x, y, name = "") ->
     # Removes worker at point
@@ -319,14 +335,15 @@ removeAllObjects = (x, y) ->
     return
 
 createVillage = (x, y) ->
-    village = new Sprite {
-        image: "img/village.png",
-        x: x,
-        y: y
-    }
-    village.name = "village"
-    village.alive = true
-    tileMap.push(village)
+    if !isCellOccupied(getPoint(x, y))
+        village = new Sprite {
+            image: "img/village.png",
+            x: x,
+            y: y
+        }
+        village.name = "village"
+        village.alive = true
+        tileMap.push(village)
     return
 
 getRandPos = ->
@@ -405,39 +422,40 @@ class Worker
         if @alive
             # Move player
 
-            # Discard old player
-            removeObject(@sprite.x, @sprite.y, "worker")
 
             x *= TILE_SIZE
             y *= TILE_SIZE
 
             pos =  getTileCorner(x + @sprite.x, @sprite.y + y)
 
-            @sprite.moveTo(pos.x, pos.y)
-            @x = @sprite.x
-            @y = @sprite.y
-            tileMap.push @
+            if !isCellOccupied(pos)
+                # Discard old player
+                removeObject(@sprite.x, @sprite.y, "worker")
+
+                @sprite.moveTo(pos.x, pos.y)
+                @x = @sprite.x
+                @y = @sprite.y
+                tileMap.push @
 
         return
 
     walk: ->
-        if (!isNearObject( getPoint(@sprite.x, @sprite.y) ))
-            dx = 0
-            dy = 0
-            while dx == 0 && dy == 0
-                if getRandBoolean() 
-                    if getRandBoolean()
-                        dx = 1
-                    else
-                        dx = -1
-
+        dx = 0
+        dy = 0
+        while dx == 0 && dy == 0
+            if getRandBoolean() 
+                if getRandBoolean()
+                    dx = 1
                 else
-                    if getRandBoolean()
-                        dy = 1
-                    else 
-                        dy = -1
+                    dx = -1
 
-            @move(dx, dy)
+            else
+                if getRandBoolean()
+                    dy = 1
+                else 
+                    dy = -1
+
+        @move(dx, dy)
         return
 
     gather: (bush) ->
@@ -461,7 +479,7 @@ class Worker
 
         if @foodEaten > @maxFood * 0.8
             pos = getRandomNeighbour(@x, @y)
-            if pos? && !isNearObject(pos)
+            if pos? && !isCellOccupied(pos)
                 @food = @food / 3
                 worker = new Worker(pos.x * TILE_SIZE, pos.y * TILE_SIZE, @carryWeight, @food)
 
@@ -506,7 +524,7 @@ class Bush
         if @food > @capacity / 2
 
             pos = getRandomNeighbour(@x, @y)
-            if pos? && !isNearObject(pos)
+            if pos? && !isCellOccuped(pos)
                 bush = new Bush( pos.x * TILE_SIZE, pos.y * TILE_SIZE, halfCap, @capacity)
                 @food = halfCap
                 tileMap.push bush
