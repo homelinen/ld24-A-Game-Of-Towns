@@ -13,3 +13,4 @@
 * Tightly trapped buildings should be destroyed
 * Can't fill whole screen with people
 * Simulation should happen continuously. (Might need to mess with states)
+* Some villagers do not spawn in the right place

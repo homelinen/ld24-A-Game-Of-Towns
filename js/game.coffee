@@ -64,7 +64,7 @@ BuildState = ->
             if !workerPresent && @villagerLimit > 0  
                 tilePos = getTileCorner(jaws.mouse_x, jaws.mouse_y)
                 # Place a person
-                worker = new Worker(tilePos.x, tilePos.y, 50, 5)
+                worker = new Worker(tilePos.x, tilePos.y, 10, 5)
 
                 tileMap.push(worker)
                 @villagerLimit--
@@ -72,6 +72,7 @@ BuildState = ->
         if jaws.pressed "right_mouse_button"
 
             tilePos = getTileCorner(jaws.mouse_x, jaws.mouse_y)
+            console.log tileMap.at(tilePos.x, tilePos.y)
             removeAllObjects(tilePos.x, tilePos.y)
 
         if pressed("enter") || pressed "s"
@@ -306,14 +307,16 @@ isNearObject = (pos)->
 removeObject = (x, y, name = "") ->
     # Removes worker at point
 
+    removed = false
     items = tileMap.at(x, y)
     count = 0
     if jaws.isArray(items) && items != undefined
         for item in items
             if item? && item.name == name
                 tileMap.cells[getTilePosx(x)][getTilePosy(y)].splice(count, 1)
+                removed = true
             count++
-    return
+    removed
 
 removeAllObjects = (x, y) ->
     # Remove all the objects in a cell
