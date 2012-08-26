@@ -33,17 +33,17 @@ Init = ->
 
         tileMap = new TileMap { cell_size: [TILE_SIZE,TILE_SIZE] }
         tileMap.push tiles
-        createLake(5)
+        createLake(10)
 
         bushes = []
-        for bush in [0..10]
+        for bush in [0..20]
     
             tilePos = getRandPos()
             
             while isCellOccupied getCellPos tilePos
                 tilePos = getRandPos()
 
-            bushes.push new Bush(tilePos.x, tilePos.y, 2, 20)
+            bushes.push new Bush(tilePos.x, tilePos.y, 2, 10)
 
         tileMap.push bushes
         jaws.switchGameState(BuildState)
@@ -90,7 +90,6 @@ BuildState = ->
             removeAllObjects(tilePos.x, tilePos.y)
 
         if simulate
-            console.log "Step"
             simulate = false
             @villagerLimit = Simulate().step(@villagerLimit)
 
@@ -99,7 +98,7 @@ BuildState = ->
             setTimeout(->
                 simulate = true
                 return
-            , 1000)
+            , 250)
 
         fps.innerHTML = "Fps: " + jaws.game_loop.fps
         return
@@ -164,7 +163,36 @@ Simulate = ->
                     else if item.name == "bush"
                         item.update()
                     else if item.name == "village"
-                        getNeighbours(item.x, item.y)
+
+                        x = item.x
+                        y = item.y
+
+                        villages = []
+                        adjacentTiles = getSurroundingTiles(x, y)
+                        for neighbour in adjacentTiles
+                            nTown = getContentsOfType(neighbour, "village")
+                            if nTown.length > 0
+                                if villages.indexOf nTown[0] < 0
+                                    villages.push nTown[0]
+
+                        if villages.length > 1
+                            console.log "CHURCH"
+                            # Add current village to list as well
+                            villages.push item
+
+                            for village in villages
+                                removeObject(village.x, village.y, "village")
+
+                            church = new Sprite {
+                                image: "img/church.png",
+                                x: x,
+                                y: y
+                            }
+                            church.alive = true
+                            church.isFlammable = false
+                            tileMap.push church
+                                
+
                     else if item.name == "fire"
                         item.update()
 
@@ -334,6 +362,10 @@ createLake = (size) ->
 
     for i in [0..size]
         cell = getNextPassableCell(pos.x, pos.y)
+        if cell?
+            break
+
+        pos = getRandPos()
 
         water = new Water cell.x, cell.y
 
@@ -374,6 +406,15 @@ getContentsOfCell = (pos) ->
             return item
     return
 
+getContentsOfType = (pos, type) ->
+    
+    match = []
+    contents = tileMap.cell(pos.x, pos.y)
+    for item in contents
+        if item.name == type
+            match.push item
+
+    match
 
 getTilePosx = (x) -> 
     x = getTileComp(x)
@@ -718,6 +759,7 @@ jaws.onload = ->
     jaws.assets.add("img/bush.png")
     jaws.assets.add("img/fire.png")
     jaws.assets.add("img/water.png")
+    jaws.assets.add("img/church.png")
     #jaws.assets.loadAll()
 
     jaws.start Init
