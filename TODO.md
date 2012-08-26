@@ -1,9 +1,7 @@
 # TODO #
 
-* Remove brackets from .pressed()
 * Villagers can share food
 * Food can be stored in a village
-* Should have a villager limit
 * Animate bushes to show food levels
 * Day/night? Villagers need villages to survive
 * Villages shouldn't be as tightly packed
@@ -11,6 +9,10 @@
 * Enemies that attack
 * Upgraadeable buildings
 * Tightly trapped buildings should be destroyed
-* Can't fill whole screen with people
 * Simulation should happen continuously. (Might need to mess with states)
-* Some villagers do not spawn in the right place
+* Should reproduction be between two workers?
+* Burning buildings
+* Giving Workers orders
+* Water and thirst
+* Trees as a further resource
+* Houses should be passable
