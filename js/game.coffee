@@ -284,10 +284,10 @@ getRandomNeighbour = (x, y) ->
         return { x: neighbour.x, y: neighbour.y }
     return
 
-isCellOccupied = (pos) ->
+isCellOccupied = (pos, tiles = tileMap) ->
     # Decide if the cell is passable
 
-    cell = tileMap.cell(pos.x, pos.y)
+    cell = tile * TILE_SIZEs.cell(pos.x, pos.y)
     for item in cell
         if item.name != undefined && item.name?
             return true
