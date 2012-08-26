@@ -83,7 +83,6 @@ BuildState = ->
         if jaws.pressed "right_mouse_button"
 
             tilePos = getTileCorner(jaws.mouse_x, jaws.mouse_y)
-            console.log tileMap.at(tilePos.x, tilePos.y)
             removeAllObjects(tilePos.x, tilePos.y)
 
         if pressed("enter") || pressed "s"
@@ -133,8 +132,7 @@ Simulate = ->
         randPos = getRandPos()
         if isAreaFlammable getCellPos(randPos)
             # Time out on random fires
-            console.log "Fire started"
-            fire = new Fire(randPos.x, randPos.y)
+            fire = new Fire(randPos.x, randPos.y, 10)
             tileMap.push fire
         return vilLim
 
@@ -174,7 +172,7 @@ Simulate = ->
                     else if item.name == "village"
                         getNeighbours(item.x, item.y)
                     else if item.name == "fire"
-                        item.spread()
+                        item.update()
 
                 else
                     # Otherwise dead
@@ -245,10 +243,8 @@ GameOver = ->
 
         return
     return @ 
-
-getTileCorner = (x, y) ->
-    # Get the top corner of a cell
-    # x xPosition on the grid
+    
+getTileCorner = (x, y) -> # Get the top corner of a cell # x xPosition on the grid
     # y yPosition on the grid
     # Return Object with fields x and y
     xPos = (Math.floor getTilePosx(x)) * TILE_SIZE
@@ -258,7 +254,6 @@ getTileCorner = (x, y) ->
 getScreenFromVec = (pos) ->
     # Get the top corner of a cell
     # pos: Vector 
-
     getTileCorner pos.x, pos.y
 
 getSurroundingTiles = (x, y) ->
@@ -366,6 +361,7 @@ removeAllObjects = (x, y) ->
 removeAllAtVec = (pos) ->
     # Remove all objects at given Vector
 
+    pos = getScreenFromVec pos
     removeAllObjects pos.x, pos.y
 
 createVillage = (x, y) ->
@@ -593,7 +589,7 @@ class Bush
 class Fire
     # Fire class, burns everything around it
     
-    constructor: (x, y) ->
+    constructor: (x, y, @heat) ->
         @sprite = new Sprite {
             image: "img/fire.png",
             x: x,
@@ -603,16 +599,20 @@ class Fire
         @y = @sprite.y
         @name = "fire"
         @alive = yes
-
-        @burn()
         
+    update: ->
+        @burn()
+        @heat--
+        if @heat <= 0
+            @alive = false
+        else
+            @spread()
+
     burn: ->
         pos = getPoint(@x, @y)
-        console.log pos
         if isCellOccupied(pos)
             tilePos = getScreenFromVec pos
-            console.log pos
-            removeAllObjects(tilePos.x, tilePos.y)
+            removeAllAtVec(tilePos)
             # Add self back to map
             tileMap.push @
         return
@@ -621,8 +621,7 @@ class Fire
         pos = getRandomNeighbour(@x, @y)
 
         if pos? && isCellOccupied(pos)
-            console.log pos
-            fire = new Fire(pos.x * TILE_SIZE, pos.y * TILE_SIZE)
+            fire = new Fire(pos.x * TILE_SIZE, pos.y * TILE_SIZE, @heat)
             tileMap.push fire
         return
 
