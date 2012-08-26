@@ -122,53 +122,39 @@ Simulate = ->
         villagerCount = 0
         
         allTiles = tileMap.all()
-        for villager in allTiles
+        for item in allTiles
 
-            if villager.name != undefined 
-                if villager.alive
-                    if villager.name == "worker"
+            if item.name != undefined 
+                if item.alive
+                    if item.name == "worker"
                         villagerCount++
                         workCount = 0
-                        adjacent = getSurroundingTiles(villager.x, villager.y)
-                        for point in adjacent
+                        adjacentTiles = getSurroundingTiles(item.x, item.y)
+                        for point in adjacentTiles
 
                             tempTile = tileMap.at(point.x * TILE_SIZE, point.y * TILE_SIZE)
                             # Loop through items at tile
-                            for item in tempTile
-                                if  item.name == "worker"
+                            for neighbour in tempTile
+                                if  neighbour.name == "worker"
                                     workCount++
                                     # In case two workers occupy the same space
                                     break
-                                else if item.name == "bush"
-                                    villager.gather(item)
+                                else if neighbour.name == "bush"
+                                    item.gather(neighbour)
 
-                        villager.update()
+                        item.update()
 
-                        if workCount >= @villPop && !isNearObject(villager.x, villager.y)
-                            village = new Sprite {
-                                image: "img/village.png",
-                                x: villager.x,
-                                y: villager.y
-                            }
-                            village.name = "village"
-                            village.alive = true
-                            tileMap.push(village)
-
-                            removeObject(villager.x, villager.y, "worker")
+                        if workCount >= @villPop && !isNearObject(item.x, item.y)
+                            # Replace worker with a village
+                            createVillage(item.x, item.y)
+                            removeObject(item.x, item.y, "worker")
                             vilLim++
-                    else if villager.name == "bush"
-                        villager.update()
-                        halfCap = villager.capacity * 0.2
-                        if villager.food > villager.capacity / 2
-
-                            pos = getRandomNeighbour(villager.x, villager.y)
-                            if pos? && !isNearObject(pos)
-                                bush = new Bush( pos.x * TILE_SIZE, pos.y * TILE_SIZE, halfCap, villager.capacity)
-                                villager.food = halfCap
-                                tileMap.push bush
+                    else if item.name == "bush"
+                        item.update()
                 else
-                    vname = villager.name
-                    removeObject(villager.x, villager.y, vname)
+                    # Otherwise dead
+                    vname = item.name
+                    removeObject(item.x, item.y, vname)
 
         @totalVillagersPlaced += villagerCount
         if villagerCount < 1 && vilLim < 1
@@ -330,6 +316,17 @@ removeAllObjects = (x, y) ->
                 tileMap.cells[getTilePosx(x)][getTilePosy(y)].splice(count, 1)
             count++
 
+    return
+
+createVillage = (x, y) ->
+    village = new Sprite {
+        image: "img/village.png",
+        x: x,
+        y: y
+    }
+    village.name = "village"
+    village.alive = true
+    tileMap.push(village)
     return
 
 getRandPos = ->
@@ -498,9 +495,22 @@ class Bush
             amount
 
     update: ->
-        growth = @capacity / 25
+        growth = @capacity / 20
         if (@food + growth) < @capacity
             @food += growth
+
+        @spawn()
+
+    spawn: ->
+        halfCap = @capacity * 0.2
+        if @food > @capacity / 2
+
+            pos = getRandomNeighbour(@x, @y)
+            if pos? && !isNearObject(pos)
+                bush = new Bush( pos.x * TILE_SIZE, pos.y * TILE_SIZE, halfCap, @capacity)
+                @food = halfCap
+                tileMap.push bush
+        return
 
     draw: ->
         @sprite.draw()
