@@ -635,6 +635,7 @@ jaws.onload = ->
     jaws.assets.add("img/villager.png")
     jaws.assets.add("img/village.png")
     jaws.assets.add("img/bush.png")
+    jaws.assets.add("img/fire.png")
     #jaws.assets.loadAll()
 
     jaws.start Init
