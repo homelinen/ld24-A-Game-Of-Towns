@@ -40,7 +40,7 @@ Init = ->
     
             tilePos = getRandPos()
             
-            while isCellOccupied tilePos
+            while isCellOccupied getCellPos tilePos
                 tilePos = getRandPos()
 
             bushes.push new Bush(tilePos.x, tilePos.y, 2, 20)
@@ -71,13 +71,13 @@ BuildState = ->
         if jaws.pressed "left_mouse_button"
             workerPresent = no
 
-            for tile in tileMap.at(jaws.mouse_x, jaws.mouse_y)
-                if tile.name == "worker"
-                    workerPresent = yes
-                    break
+            x = jaws.mouse_x
+            y = jaws.mouse_y
 
-            if !workerPresent && @villagerLimit > 0  
-                tilePos = getTileCorner(jaws.mouse_x, jaws.mouse_y)
+            tilePos = getTileCorner x, y
+            cellPos = getCellPos tilePos
+            notOccupied = !isCellOccupied cellPos
+            if notOccupied && @villagerLimit > 0  
                 # Place a person
                 worker = new Worker(tilePos.x, tilePos.y, 10, 5)
 
@@ -412,6 +412,9 @@ getCellPos = (pos) ->
 getPoint = (x, y) ->
     # Returns a vector representing the cell co-ordinates of x and y
     return { x: getTilePosx(x), y: getTilePosy(y) }
+
+makePoint = (x, y) ->
+    { x: x, y: y }
 
 getMapWidth = ->
     jaws.width / TILE_SIZE
