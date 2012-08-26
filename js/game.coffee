@@ -254,7 +254,9 @@ getTileCorner = (x, y) -> # Get the top corner of a cell # x xPosition on the gr
 getScreenFromVec = (pos) ->
     # Get the top corner of a cell
     # pos: Vector 
-    getTileCorner pos.x, pos.y
+    pos.x *= TILE_SIZE
+    pos.y *= TILE_SIZE
+    pos
 
 getSurroundingTiles = (x, y) ->
     x = getTilePosx(x)
@@ -611,8 +613,7 @@ class Fire
     burn: ->
         pos = getPoint(@x, @y)
         if isCellOccupied(pos)
-            tilePos = getScreenFromVec pos
-            removeAllAtVec(tilePos)
+            removeAllAtVec(pos)
             # Add self back to map
             tileMap.push @
         return
