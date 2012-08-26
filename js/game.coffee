@@ -339,8 +339,8 @@ createLake = (size) ->
 
 getRandPos = ->
     # Get a random Vector
-    rx = getRand jaws.width / TILE_SIZE
-    ry = getRand jaws.height / TILE_SIZE
+    rx = getRand getMapWidth()
+    ry = getRand getMapHeight()
     rx = Math.round(rx) * TILE_SIZE
     ry = Math.round(ry) * TILE_SIZE
     getTileCorner rx, ry
@@ -356,6 +356,19 @@ getRandBoolean = ->
         true
     else 
         false
+
+getContentsAt = (x, y) ->
+    getContentsOfCell getPoint(x, y)
+
+getContentsOfCell = (pos) ->
+    # Retrieve the top object in the cell
+     
+    contents = tileMap.cell(pos.x, pos.y)
+    for item in contents
+        if item.name?
+            return item
+    return
+
 
 getTilePosx = (x) -> 
     x = getTileComp(x)
@@ -462,6 +475,7 @@ class Worker
         @name = "worker"
         @curWeight = @food
         @foodEaten = 2 * @food
+        @isFlammable = true
         @maxFood = @foodEaten
         @lastDx = 0
         @lastDy = 0
@@ -578,6 +592,7 @@ class Fire
         @y = @sprite.y
         @name = "fire"
         @alive = yes
+        @isFlammable = false
         
     update: ->
         @burn()
@@ -598,9 +613,17 @@ class Fire
     spread: ->
         pos = getNextCell(@sprite.x, @sprite.y)
 
-        if pos? && isCellOccupied(getCellPos pos)
-            fire = new Fire(pos.x, pos.y, @heat)
-            tileMap.push fire
+        if pos?
+            tile = getContentsAt(pos.x, pos.y)
+            if tile?
+                if !tile.isFlammable?
+                    flammable = false
+                else 
+                    flammable = tile.isFlammable
+
+                if flammable
+                    fire = new Fire(pos.x, pos.y, @heat)
+                    tileMap.push fire
         return
 
     draw: ->
@@ -620,6 +643,7 @@ class Water
 
         @x = @sprite.x
         @y = @sprite.y
+        @isFlammable = false
 
     draw: ->
         @sprite.draw()
