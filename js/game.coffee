@@ -1,3 +1,14 @@
+# A Game of Towns
+#
+# Author: Calum Gilchrist
+# Website: http://calumgilchrist.co.uk
+# 
+# Notes: 
+#   * The {x, y} object is a vector, and almost always should represent a tile 
+#   position not a screen position
+#   * Inversely, methods requiring x and y should be screen positions
+#
+
 tileMap = null
 TILE_SIZE = null
 
@@ -125,7 +136,6 @@ Simulate = ->
             console.log "Fire started"
             fire = new Fire(randPos.x, randPos.y)
             tileMap.push fire
-
         return vilLim
 
     @workers = (vilLim)->
@@ -163,6 +173,8 @@ Simulate = ->
                         item.update()
                     else if item.name == "village"
                         getNeighbours(item.x, item.y)
+                    else if item.name == "fire"
+                        item.spread()
 
                 else
                     # Otherwise dead
@@ -236,12 +248,18 @@ GameOver = ->
 
 getTileCorner = (x, y) ->
     # Get the top corner of a cell
-    # x xPosition
-    # y yPosition
+    # x xPosition on the grid
+    # y yPosition on the grid
     # Return Object with fields x and y
     xPos = (Math.floor getTilePosx(x)) * TILE_SIZE
     yPos = (Math.floor getTilePosy(y)) * TILE_SIZE
     { x: xPos, y: yPos }
+
+getScreenFromVec = (pos) ->
+    # Get the top corner of a cell
+    # pos: Vector 
+
+    getTileCorner pos.x, pos.y
 
 getSurroundingTiles = (x, y) ->
     x = getTilePosx(x)
@@ -331,7 +349,8 @@ removeObject = (x, y, name = "") ->
     removed
 
 removeAllObjects = (x, y) ->
-    # Remove all the objects in a cell
+    # Remove all the objects in the cell at screen 
+    # co-ord x, y
     
     items = tileMap.at(x, y)
 
@@ -343,6 +362,11 @@ removeAllObjects = (x, y) ->
             count++
 
     return
+
+removeAllAtVec = (pos) ->
+    # Remove all objects at given Vector
+
+    removeAllObjects pos.x, pos.y
 
 createVillage = (x, y) ->
     if !isCellOccupied(getPoint(x, y))
@@ -361,6 +385,7 @@ getRandPos = ->
     getTileCorner getRand(jaws.width), getRand(jaws.height)
 
 getRand = (max) ->
+    # Get a random integer that is less than the max
     rand = Math.random()
     mult = 10
     while rand * mult < max
@@ -390,6 +415,9 @@ getTileComp = (comp)  ->
     comp / TILE_SIZE
 
 isAreaFlammable = (pos) ->
+    # Checks if the area around position is flammable 
+    # enough for a fire to catch
+
     neighbours = getNeighbours(pos)
     count = 0
 
@@ -397,7 +425,8 @@ isAreaFlammable = (pos) ->
         if neighbour.isFlammable != undefined && neighbour.isFlammable
             count++
 
-    return count >= 4
+    minFlammableNeighbours = 4
+    return count >= minFlammableNeighbours
 
 getPosInLimits = (point, max) ->
     if point < 0
@@ -412,6 +441,7 @@ getCellPos = (pos) ->
     return { x: getTilePosx(pos.x), y: getTilePosy(pos.y) }
 
 getPoint = (x, y) ->
+    # Returns a vector representing the cell co-ordinates of x and y
     return { x: getTilePosx(x), y: getTilePosy(y) }
 
 getMapWidth = ->
@@ -447,7 +477,6 @@ class Worker
     move: (x, y)->
         if @alive
             # Move player
-
 
             x *= TILE_SIZE
             y *= TILE_SIZE
@@ -572,6 +601,8 @@ class Fire
         }
         @x = @sprite.x
         @y = @sprite.y
+        @name = "fire"
+        @alive = yes
 
         @burn()
         
@@ -579,7 +610,8 @@ class Fire
         pos = getPoint(@x, @y)
         console.log pos
         if isCellOccupied(pos)
-            tilePos = getTileCorner pos.x, pos.y
+            tilePos = getScreenFromVec pos
+            console.log pos
             removeAllObjects(tilePos.x, tilePos.y)
             # Add self back to map
             tileMap.push @
@@ -588,9 +620,11 @@ class Fire
     spread: ->
         pos = getRandomNeighbour(@x, @y)
 
-        if pos? && isAreaFlammable(pos)
+        if pos? && isCellOccupied(pos)
+            console.log pos
             fire = new Fire(pos.x * TILE_SIZE, pos.y * TILE_SIZE)
             tileMap.push fire
+        return
 
     draw: ->
         @sprite.draw()
