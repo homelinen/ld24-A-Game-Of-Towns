@@ -366,8 +366,6 @@ createLake = (size) ->
 
     for i in [0..size]
         cell = getNextPassableCell(pos.x, pos.y)
-        if cell?
-            break
 
         pos = getRandPos()
 
