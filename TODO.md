@@ -17,3 +17,5 @@
 * Trees as a further resource
 * Houses should be passable
 * Reduce the growth of cornered bushes, maybe kill em
+* Make water and bushes at start scale to a percentage. 10% map filled as bushes, etc
+* Over growing bushes should swamp buildingst 
