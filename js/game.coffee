@@ -36,7 +36,7 @@ Init = ->
         createLake(10)
 
         bushes = []
-        for bush in [0..20]
+        for bush in [0..60]
     
             tilePos = getRandPos()
             
@@ -188,6 +188,7 @@ Simulate = ->
                                 x: x,
                                 y: y
                             }
+                            church.name = "church"
                             church.alive = true
                             church.isFlammable = false
                             tileMap.push church
@@ -280,10 +281,13 @@ isCellOccupied = (pos, tiles = tileMap) ->
     # Decide if the cell is passable
 
     cell = tiles.cell(pos.x, pos.y)
-    for item in cell
-        if item.name != undefined && item.name?
-            return true
-    return false
+    if cell?
+        for item in cell
+            if item.name != undefined && item.name?
+                return true
+        return false
+    else 
+        return true
 
 getNeighbours = (pos) ->
     # Return all the named items in a cell
