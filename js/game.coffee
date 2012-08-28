@@ -58,7 +58,7 @@ define [
 
             tilePos = @map.getTileCorner x, y
             cellPos = @map.getCellPos tilePos
-            notOccupied = !isCellOccupied cellPos
+            notOccupied = !map.isCellOccupied cellPos
             if notOccupied && @villagerLimit > 0  
                 # Place a person
                 worker = new Worker(tilePos.x, tilePos.y, 10, 5)
@@ -123,7 +123,7 @@ define [
                         adjacentTiles = @map.getSurroundingTiles(item.x, item.y)
                         for point in adjacentTiles
 
-                            tempTile = @map.tileMap.at(point.x * TILE_SIZE, point.y * TILE_SIZE)
+                            tempTile = @map.tileMap.at(point.x, point.y)
                             # Loop through items at tile
                             for neighbour in tempTile
                                 if  neighbour.name == "worker"
@@ -133,7 +133,7 @@ define [
                                 else if neighbour.name == "bush"
                                     item.gather(neighbour)
 
-                        item.update()
+                        item.update(map)
 
                         if workCount >= @villPop
                             # Replace worker with a village
@@ -141,7 +141,7 @@ define [
                             createVillage(item.x, item.y)
                             @villagerLimit++
                     else if item.name == "bush"
-                        item.update()
+                        item.update(map)
                     else if item.name == "village"
 
                         x = item.x
@@ -175,7 +175,7 @@ define [
                                 
 
                     else if item.name == "fire"
-                        item.update()
+                        item.update(map)
 
                 else
                     # Otherwise dead
@@ -189,7 +189,7 @@ define [
     return @
     
     createVillage = (x, y) ->
-        if !isCellOccupied(@map.getPoint(x, y))
+        if !map.isCellOccupied(@map.getPoint(x, y))
             village = new Sprite {
                 image: "img/village.png",
                 x: x,
