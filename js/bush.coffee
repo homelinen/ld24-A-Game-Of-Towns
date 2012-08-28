@@ -1,19 +1,13 @@
 
-define ['map'], (map) ->
-    class Bush
+define ['tile', 'map'], (Tile, map) ->
+
+    class Bush extends Tile
         # Food giving object
         # Food int representation of food provided
         constructor: (xPos, yPos, @food, @capacity) ->
-            @sprite = new Sprite {
-                image: "img/bush.png",
-                x: xPos,
-                y: yPos
-                }
-            @alive = true
-            @x = @sprite.x
-            @y = @sprite.y
-            @name = "bush"
-            @isFlammable = yes
+            flammable = false
+            name = "bush"
+            super name, xPos, yPos, "img/bush.png", map, flammable
 
         gather: (amount) ->
             if (@food - amount) > 0

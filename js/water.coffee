@@ -1,19 +1,12 @@
 
-define ['map'], (map) ->
-    class Water
+define ['tile', 'map'], (Tile, map) ->
+    class Water extends Tile
         
         constructor: (x, y) ->
-            @sprite = new Sprite {
-                image: "img/water.png",
-                x: x,
-                y: y,
-            }
-            @name = "water"
-            @alive = true
-
-            @x = @sprite.x
-            @y = @sprite.y
-            @isFlammable = false
+            image = "img/water.png"
+            name = "water"
+            flammable = false
+            super name, x, y, image, flammable
 
         draw: ->
             @sprite.draw()

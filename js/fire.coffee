@@ -1,21 +1,15 @@
 
-define ['map'], (map) ->
-    class Fire
+define ['tile', 'map'], (Tile, map) ->
+    class Fire extends Tile
         # Fire class, burns everything around it
         
         constructor: (x, y, @heat) ->
-            @sprite = new Sprite {
-                image: "img/fire.png",
-                x: x,
-                y: y
-            }
-            @x = @sprite.x
-            @y = @sprite.y
-            @name = "fire"
-            @alive = yes
-            @isFlammable = false
+            image = "img/fire.png"
+            name = "fire"
+            flammable = false
+            super name, x, y, image, flammable
             
-        update: ->
+        update: () ->
             @burn()
             @heat--
             if @heat <= 0

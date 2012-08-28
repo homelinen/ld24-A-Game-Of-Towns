@@ -1,18 +1,13 @@
-define ['map'], (map) ->
-    class Worker
+define ['tile', 'map'], (Tile, map) ->
+    class Worker extends Tile
         constructor: (xPos, yPos, @carryWeight, @food) ->
-            @alive = true
-            @sprite = new Sprite {
-                 image: "img/villager.png",
-                 x: xPos,
-                 y: yPos
-            }
-            @x = @sprite.x
-            @y = @sprite.y
-            @name = "worker"
+            image = "img/villager.png"
+            name = "worker"
+            flammable = false
+            super name, xPos, yPos, image, flammable
+
             @curWeight = @food
             @foodEaten = 2 * @food
-            @isFlammable = true
             @maxFood = @foodEaten
             @lastDx = 0
             @lastDy = 0
