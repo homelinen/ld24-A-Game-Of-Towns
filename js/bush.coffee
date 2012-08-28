@@ -19,22 +19,22 @@ define ['tile', 'map'], (Tile, map) ->
                 @alive = false
                 amount
 
-        update: ->
+        update: (map) ->
             growth = @capacity / 20
             if (@food + growth) < @capacity
                 @food += growth
 
-            @spawn()
+            @spawn(map)
 
-        spawn: ->
+        spawn: (map) ->
             halfCap = @capacity * 0.2
             if @food > @capacity / 2
 
-                pos = getNextPassableCell(@sprite.x, @sprite.y)
+                pos = map.getNextPassableCell(@sprite.x, @sprite.y)
                 if pos?
                     bush = new Bush( pos.x, pos.y, halfCap, @capacity)
                     @food = halfCap
-                    tileMap.push bush
+                    map.tileMap.push bush
             return
 
         draw: ->

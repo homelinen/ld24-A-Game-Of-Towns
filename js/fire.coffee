@@ -9,27 +9,27 @@ define ['tile', 'map'], (Tile, map) ->
             flammable = false
             super name, x, y, image, flammable
             
-        update: () ->
-            @burn()
+        update: (map) ->
+            @burn(map)
             @heat--
             if @heat <= 0
                 @alive = false
             else
-                @spread()
+                @spread(map)
 
-        burn: ->
-            pos = getPoint(@x, @y)
-            if isCellOccupied(pos)
-                removeAllAtVec(pos)
+        burn: (map) ->
+            pos = map.getPoint(@x, @y)
+            if map.isCellOccupied(pos)
+                map.removeAllAtVec(pos)
                 # Add self back to map
-                tileMap.push @
+                map.tileMap.push @
             return
 
-        spread: ->
-            pos = getNextCell(@sprite.x, @sprite.y)
+        spread: (map) ->
+            pos = map.getNextCell(@sprite.x, @sprite.y)
 
             if pos?
-                tile = getContentsAt(pos.x, pos.y)
+                tile = map.getContentsAt(pos.x, pos.y)
                 if tile?
                     if !tile.isFlammable?
                         flammable = false
@@ -38,7 +38,7 @@ define ['tile', 'map'], (Tile, map) ->
 
                     if flammable
                         fire = new Fire(pos.x, pos.y, @heat)
-                        tileMap.push fire
+                        map.tileMap.push fire
             return
 
         draw: ->

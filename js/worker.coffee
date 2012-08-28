@@ -15,23 +15,23 @@ define ['tile', 'map'], (Tile, map) ->
         draw: ->
             @sprite.draw()
 
-        update: ->
-            @eat()
-            @move()
+        update: (map) ->
+            @eat(map)
+            @move(map)
             return
 
-        move: ->
+        move: (map) ->
             if @alive
                 # Move player
 
-                cell = getNextPassableCell(@sprite.x, @sprite.y)
+                cell = map.getNextPassableCell(@sprite.x, @sprite.y)
                 if cell?
-                    removeObject(@sprite.x, @sprite.y, "worker")
+                    map.removeObject(@sprite.x, @sprite.y, "worker")
 
                     @sprite.moveTo(cell.x, cell.y)
                     @x = @sprite.x
                     @y = @sprite.y
-                    tileMap.push @
+                    map.tileMap.push @
 
             return
 
@@ -41,7 +41,7 @@ define ['tile', 'map'], (Tile, map) ->
                 @curWeight += gathered
                 @food += gathered
             
-        eat: ->
+        eat: (map) ->
             @foodEaten -= 1
 
             if @foodEaten < @maxFood
@@ -55,12 +55,13 @@ define ['tile', 'map'], (Tile, map) ->
                     @alive = false
 
             if @foodEaten > @maxFood * 0.8
-                pos = getRandomNeighbour(@x, @y)
-                if pos? && !isCellOccupied(pos)
+                pos = map.getRandomNeighbour(@x, @y)
+                if pos? && !map.isCellOccupied(pos)
                     @food = @food / 3
-                    worker = new Worker(pos.x * TILE_SIZE, pos.y * TILE_SIZE, @carryWeight, @food)
+                    pos = map.getScreenFromVec(pos)
+                    worker = new Worker(pos.x, pos.y, @carryWeight, @food)
 
-                    tileMap.push worker
+                    map.tileMap.push worker
 
         toString: ->
             return "#{@name}: #{@x}, #{@y}"

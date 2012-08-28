@@ -120,7 +120,7 @@ define [], ->
             if jaws.isArray(items) && items != undefined
                 for item in items
                     if item? && item.name == name
-                        @tileMap.cells[getTilePosx(x)][getTilePosy(y)].splice(count, 1)
+                        @tileMap.cells[@getTilePosx(x)][@getTilePosy(y)].splice(count, 1)
                         removed = true
                     count++
             removed
@@ -135,7 +135,7 @@ define [], ->
             if jaws.isArray(items) && items != undefined
                 for item in items
                     if item? && item.name != undefined
-                        @tileMap.cells[getTilePosx(x)][getTilePosy(y)].splice(count, 1)
+                        @tileMap.cells[@getTilePosx(x)][@getTilePosy(y)].splice(count, 1)
                     count++
 
             return
@@ -154,9 +154,10 @@ define [], ->
             if jaws.isArray(items) && items != undefined
                 for item in items
                     if item?
-                        @tileMap.cells[getTilePosx(x)][getTilePosy(y)].splice(count, 1)
+                        cellPos = @getCellPos(pos)
+                        @tileMap.cells[pos.x][pos.y].splice(count, 1)
                     count++
-            return
+            return 
 
         getRandPos: ->
             # Get a random Vector
@@ -179,7 +180,7 @@ define [], ->
                 false
 
         getContentsAt: (x, y) ->
-            @getContentsOfCell getPoint(x, y)
+            @getContentsOfCell @getPoint(x, y)
 
         getContentsOfCell: (pos) ->
             # Retrieve the top object in the cell
@@ -252,11 +253,11 @@ define [], ->
             dx = 0
             dy = 0
             while dx == 0 && dy == 0
-                if getRandBoolean() 
+                if @getRandBoolean() 
                     dx = @getRandomSign()
                 else
                     dy = @getRandomSign()
-            makePoint(dx, dy)
+            @makePoint(dx, dy)
 
         getRandomSign: ->
             # Returns either 1 or -1
@@ -265,7 +266,7 @@ define [], ->
             else 
                 num = -1
 
-        getNextCell: (curX, curY)->
+        getNextCell: (curX, curY) ->
             # Returns a random cell adjacent to the 
 
             dir = @getRandomDirection()
