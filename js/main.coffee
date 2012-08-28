@@ -1,10 +1,5 @@
-require.config({
-    paths: {
-        jaws: 'libs/jaws'
-    }
-})
 
-require ['jaws', 'game'], (Game) ->
+require ['libs/jaws', 'game'], ( Game ) ->
     
     jaws.onload = ->
         jaws.unpack()
