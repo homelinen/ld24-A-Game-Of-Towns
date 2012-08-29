@@ -19,7 +19,7 @@
 #   Website: http://calumgilchrist.co.uk
 # 
 
-define [], ->
+define ['point'], (Point) ->
     class Map
         # Initialise things
 
@@ -42,27 +42,20 @@ define [], ->
             @tileMap.push tiles
             return
 
-        getTileCorner: (x, y) -> 
+        roundScreenVec: (v) -> 
             # Get the top corner of a cell 
             # x xPosition on the grid
             # y yPosition on the grid
             # Return Object with fields x and y
-            xPos = (Math.floor @getTilePosx(x)) * @tileSize
-            yPos = (Math.floor @getTilePosy(y)) * @tileSize
-            { x: xPos, y: yPos }
+
+            xPos = (Math.floor @getTilePosx(v.x)) * @tileSize
+            yPos = (Math.floor @getTilePosy(v.y)) * @tileSize
+            new Point xPos, yPos
 
         getScreenFromVec: (pos) ->
             # Get the top corner of a cell
             # pos: Vector 
-            x = pos.x * @tileSize
-            y = pos.y * @tileSize
-            {x: x, y: y}
-
-        getSurroundingTiles: (x, y) ->
-            x = @getTilePosx(x)
-            y = @getTilePosy(y)
-            
-            @getSurroundingCells {x: x, y: y}
+            pos.mul(@tileSize)
 
         getSurroundingCells: (pos) ->
             # Get tiles for the cell represented by obj:
@@ -83,7 +76,7 @@ define [], ->
                     if !(tempx == x && tempy == y) && (tempx == x || tempy == y) 
                         # Ensure not on a diagonal smf not given point
                         
-                        tiles.push {x: tempx, y: tempy}
+                        tiles.push new Point tempx, tempy
                     dy++
                     tempy = y + dy
                 dy = -1
@@ -91,8 +84,8 @@ define [], ->
                 tempx = x + dx
             tiles
 
-        getRandomNeighbour: (x, y) ->
-            neighbours = @getSurroundingTiles(x, y)
+        getRandomNeighbour: (pos) ->
+            neighbours = @getSurroundingCells(pos)
 
             if neighbours.length > 0
                 divisor =  1 / (neighbours.length - 1)
@@ -103,7 +96,8 @@ define [], ->
 
                 neighbour = neighbours[index]
 
-                return { x: neighbour.x, y: neighbour.y }
+                point = (new Point()).setVec(neighbour)
+                return point
             return
 
         isCellOccupied: (pos, tiles = @tileMap) ->
@@ -131,53 +125,36 @@ define [], ->
 
             neighbours
 
-        removeObject: (x, y, name = "") ->
-            # Removes worker at point
+        removeObject: (v, name = "") ->
+            # Removes worker at screen vec
 
             removed = false
-            items = @tileMap.at(x, y)
+            items = @tileMap.at(v.x, v.y)
             count = 0
             if jaws.isArray(items) && items != undefined
                 for item in items
                     if item? && item.name == name
-                        @tileMap.cells[@getTilePosx(x)][@getTilePosy(y)].splice(count, 1)
+                        @tileMap.cells[v.x][v.y].splice(count, 1)
                         removed = true
                     count++
             removed
 
-        removeAllObjects: (x, y) ->
+        removeAllObjects: (v) ->
             # Remove all the objects in the cell at screen 
             # co-ord x, y
             
-            items = @tileMap.at(x, y)
+            x = v.x
+            y = v.y
+            items = @tileMap.cell(x, y)
 
             count = 0
             if jaws.isArray(items) && items != undefined
                 for item in items
                     if item? && item.name != undefined
-                        @tileMap.cells[@getTilePosx(x)][@getTilePosy(y)].splice(count, 1)
+                        @tileMap.cells[x][y].splice(count, 1)
                     count++
 
             return
-
-        removeAllAtVec: (pos) ->
-            # Remove all objects at given Vector
-
-            pos = @getScreenFromVec pos
-            @removeAllObjects pos.x, pos.y
-
-        removeEverything: (pos) ->
-            x = pos.x
-            y = pos.y
-            items = @tileMap.at(x, y)
-            count = 0
-            if jaws.isArray(items) && items != undefined
-                for item in items
-                    if item?
-                        cellPos = @getCellPos(pos)
-                        @tileMap.cells[pos.x][pos.y].splice(count, 1)
-                    count++
-            return 
 
         getRandPos: ->
             # Get a random Vector
@@ -185,7 +162,7 @@ define [], ->
             ry = @getRand @mapHeight
             rx = Math.round(rx) * @tileSize
             ry = Math.round(ry) * @tileSize
-            @getTileCorner rx, ry
+            @roundScreenVec new Point(rx, ry)
 
         getRand: (mult) ->
             # Get a random integer that is less than the max
@@ -198,9 +175,6 @@ define [], ->
                 true
             else 
                 false
-
-        getContentsAt: (x, y) ->
-            @getContentsOfCell @getPoint(x, y)
 
         getContentsOfCell: (pos) ->
             # Retrieve the top object in the cell
@@ -259,14 +233,7 @@ define [], ->
         getCellPos: (pos) ->
             # Get the Vector for a cell position
              
-            return { x: @getTilePosx(pos.x), y: @getTilePosy(pos.y) }
-
-        getPoint: (x, y) ->
-            # Returns a vector representing the cell co-ordinates of x and y
-            return { x: @getTilePosx(x), y: @getTilePosy(y) }
-
-        makePoint: (x, y) ->
-            { x: x, y: y }
+            return new Point @getTilePosx(pos.x), @getTilePosy(pos.y) 
 
         getRandomDirection: ->
             # Returns a vector that represents a direction
@@ -277,7 +244,7 @@ define [], ->
                     dx = @getRandomSign()
                 else
                     dy = @getRandomSign()
-            @makePoint(dx, dy)
+            new Point dx, dy
 
         getRandomSign: ->
             # Returns either 1 or -1
@@ -286,25 +253,23 @@ define [], ->
             else 
                 num = -1
 
-        getNextCell: (curX, curY) ->
-            # Returns a random cell adjacent to the 
+        getNextCell: (v) ->
+            # Returns a random cell adjacent to the vector
+            # Uses Screen co-ordinates
 
-            dir = @getRandomDirection()
-            x = dir.x * @tileSize
-            y = dir.y * @tileSize
+            dir = @getScreenFromVec @getRandomDirection()
 
-            pos = @getTileCorner(x + curX, y + curY)
-            pos
+            dir.addVec(v)
+            dir
 
-        getNextPassableCell: (curX, curY, depth = 0) ->
+        getNextPassableCell: (vCur, depth = 0) ->
 
             # 4 is the number of adjacent cells
-            pos = @getNextCell(curX, curY)
+            pos = @getNextCell(vCur)
             if depth < 4
-                cellPos = @getPoint(pos.x, pos.y)
-                if !@isCellOccupied(cellPos)
+                if !@isCellOccupied(@getCellPos pos)
                     return pos
                 else
                     depth += 1
-                    return @getNextPassableCell(curX, curY, depth)
+                    return @getNextPassableCell(vCur, depth)
     return Map
