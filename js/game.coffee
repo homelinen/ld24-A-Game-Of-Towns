@@ -123,7 +123,7 @@ define [
                         adjacentTiles = @map.getSurroundingTiles(item.x, item.y)
                         for point in adjacentTiles
 
-                            tempTile = @map.tileMap.at(point.x, point.y)
+                            tempTile = @map.tileMap.cell(point.x, point.y)
                             # Loop through items at tile
                             for neighbour in tempTile
                                 if  neighbour.name == "worker"
