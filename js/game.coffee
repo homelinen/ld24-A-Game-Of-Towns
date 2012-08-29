@@ -189,11 +189,11 @@ define [
         for i in [0..size]
             cell = @map.getNextPassableCell(pos.x, pos.y)
 
+            if cell?
+                water = new Water cell.x, cell.y
+
+                @map.tileMap.push water
             pos = @map.getRandPos()
-
-            water = new Water cell.x, cell.y
-
-            @map.tileMap.push water
             pos = cell
 
         return
