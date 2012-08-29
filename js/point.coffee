@@ -34,7 +34,7 @@ define [], ->
             # Multiply locla vector points by the scalar mul
             # And return modified value
             @x *= mul
-            @y += mul
+            @y *= mul
             return @
 
         copy: ->
@@ -42,6 +42,21 @@ define [], ->
             new Point(@x, @y)
 
         mul: (mul) ->
-            @copy.mulLoc(mul)
+            v = @copy()
+            v.mulLoc(mul)
+            return v
+
+        addVec: (v) ->
+            # Add a vector to the current vector
+            # Return the new vector, to chain methods
+            @x += v.x
+            @y += v.y
+            return @
+
+        add: (x, y) ->
+            # Add the components to the vector
+            @x += x
+            @y += y
+            return @
 
     return Point
