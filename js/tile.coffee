@@ -43,6 +43,10 @@ define ['map'], (Map) ->
             @isFlammable = flammable
             return
 
+        update: ->
+            # Empty update for tiles that don't need to explicitly update
+            return
+
         draw: ->
             @sprite.draw()
 
