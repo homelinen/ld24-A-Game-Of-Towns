@@ -125,15 +125,13 @@ define [
                         adjacentTiles = @map.getSurroundingTiles(item.x, item.y)
                         for point in adjacentTiles
 
-                            tempTile = @map.tileMap.cell(point.x, point.y)
-                            # Loop through items at tile
-                            for neighbour in tempTile
-                                if  neighbour.name == "worker"
+                            contents = @map.getContentsOfCell(point)
+
+                            if contents?
+                                if contents.name == "worker"
                                     workCount++
-                                    # In case two workers occupy the same space
-                                    break
-                                else if neighbour.name == "bush"
-                                    item.gather(neighbour)
+                                else if contents.name == "bush"
+                                    item.gather(contents)
 
                         if workCount >= @villPop
                             # Replace worker with a village
@@ -142,27 +140,7 @@ define [
                             @villagerLimit++
                     else if item.name == "village"
 
-                        x = item.x
-                        y = item.y
-
-                        villages = []
-                        adjacentTiles = @map.getSurroundingTiles(x, y)
-                        for neighbour in adjacentTiles
-                            nTown = @map.getContentsOfType(neighbour, "village")
-                            if nTown.length > 0
-                                if villages.indexOf nTown[0] < 0
-                                    villages.push nTown[0]
-
-                        if villages.length > 1
-                            # Add current village to list as well
-                            villages.push item
-
-                            for village in villages
-                                @map.removeObject(village.x, village.y, "village")
-
-                            church = new Tile "church", x, y, "img/church.png", false
-                            @map.tileMap.push church
-
+                        createChurch(item)
                     item.update(map)
                 else
                     # Otherwise dead
@@ -177,6 +155,32 @@ define [
         if !map.isCellOccupied(@map.getPoint(x, y))
             village = new Tile "village", x, y, "img/village.png", true
             @map.tileMap.push(village)
+        return
+
+    createChurch = (item) ->
+        # Creates a church at items location if there are 
+        # several villages surrounding the tile
+
+        x = item.x
+        y = item.y
+
+        villages = []
+        adjacentTiles = @map.getSurroundingTiles(x, y)
+        for neighbour in adjacentTiles
+            nTown = @map.getContentsOfType(neighbour, "village")
+            if nTown.length > 0
+                if villages.indexOf nTown[0] < 0
+                    villages.push nTown[0]
+
+        if villages.length > 1
+            # Add current village to list as well
+            villages.push item
+
+            for village in villages
+                @map.removeObject(village.x, village.y, "village")
+
+            church = new Tile "church", x, y, "img/church.png", false
+            @map.tileMap.push church
         return
 
     createLake = (size) ->
