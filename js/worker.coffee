@@ -18,7 +18,7 @@
 #   Website: http://calumgilchrist.co.uk
 # 
 
-define ['tile', 'map'], (Tile, map) ->
+define ['tile','point', 'map'], (Tile, Point, map) ->
     class Worker extends Tile
         constructor: (xPos, yPos, @carryWeight, @food) ->
             image = "img/villager.png"
@@ -41,7 +41,7 @@ define ['tile', 'map'], (Tile, map) ->
             if @alive
                 # Move player
 
-                cell = map.getNextPassableCell(@sprite.x, @sprite.y)
+                cell = map.getScreenFromVec map.getNextPassableCell(@sprite.x, @sprite.y)
                 if cell?
                     map.removeObject(@sprite.x, @sprite.y, "worker")
 

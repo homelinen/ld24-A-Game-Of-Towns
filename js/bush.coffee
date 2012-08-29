@@ -18,7 +18,7 @@
 #   Website: http://calumgilchrist.co.uk
 # 
 
-define ['tile', 'map'], (Tile, map) ->
+define ['tile', 'point', 'map'], (Tile, Point, map) ->
 
     class Bush extends Tile
         # Food giving object
@@ -49,7 +49,7 @@ define ['tile', 'map'], (Tile, map) ->
             halfCap = @capacity * 0.2
             if @food > @capacity / 2
 
-                pos = map.getNextPassableCell(@sprite.x, @sprite.y)
+                pos = map.getScreenFromVec map.getNextPassableCell(new Point(@x, @y))
                 if pos?
                     bush = new Bush( pos.x, pos.y, halfCap, @capacity)
                     @food = halfCap

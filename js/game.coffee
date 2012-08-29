@@ -26,8 +26,9 @@ define [
     'fire',
     'bush',
     'tile',
+    'point'
     'map'
-    ], (Worker, Water, GameOver, Fire, Bush, Tile, Map)->
+    ], (Worker, Water, GameOver, Fire, Bush, Tile, Point, Map)->
     # Creation of the village through a map editor
     fps = document.getElementById("fps")
     simulate = true
@@ -55,10 +56,9 @@ define [
         if jaws.pressed "left_mouse_button"
             workerPresent = no
 
-            x = jaws.mouse_x
-            y = jaws.mouse_y
+            point = new Point(jaws.mouse_x, jaws.mouse_y)
 
-            tilePos = @map.getTileCorner x, y
+            tilePos = @map.roundScreenVec point
             cellPos = @map.getCellPos tilePos
             notOccupied = !map.isCellOccupied cellPos
             if notOccupied && @villagerLimit > 0  
@@ -122,7 +122,7 @@ define [
                     if item.name == "worker"
                         villagerCount++
                         workCount = 0
-                        adjacentTiles = @map.getSurroundingTiles(item.x, item.y)
+                        adjacentTiles = @map.getSurroundingTiles(new Point item.x, item.y)
                         for point in adjacentTiles
 
                             contents = @map.getContentsOfCell(point)
@@ -135,7 +135,7 @@ define [
 
                         if workCount >= @villPop
                             # Replace worker with a village
-                            @map.removeObject(item.x, item.y, "worker")
+                            @map.removeObject(new Point(item.x, item.y), "worker")
                             createVillage(item.x, item.y)
                             @villagerLimit++
                     else if item.name == "village"
@@ -145,14 +145,14 @@ define [
                 else
                     # Otherwise dead
                     vname = item.name
-                    @map.removeObject(item.x, item.y, vname)
+                    @map.removeObject(new Point(item.x, item.y), vname)
 
         @totalVillagersPlaced += villagerCount
         if villagerCount < 1 && villagerLimit < 1
             jaws.switchGameState(GameOver)
     
     createVillage = (x, y) ->
-        if !map.isCellOccupied(@map.getPoint(x, y))
+        if !map.isCellOccupied(new Point(x, y))
             village = new Tile "village", x, y, "img/village.png", true
             @map.tileMap.push(village)
         return
@@ -165,7 +165,7 @@ define [
         y = item.y
 
         villages = []
-        adjacentTiles = @map.getSurroundingTiles(x, y)
+        adjacentTiles = @map.getSurroundingTiles(new Point x, y)
         for neighbour in adjacentTiles
             nTown = @map.getContentsOfType(neighbour, "village")
             if nTown.length > 0
@@ -177,24 +177,23 @@ define [
             villages.push item
 
             for village in villages
-                @map.removeObject(village.x, village.y, "village")
+                @map.removeObject(new Point(village.x, village.y), "village")
 
             church = new Tile "church", x, y, "img/church.png", false
             @map.tileMap.push church
         return
 
     createLake = (size) ->
-        pos = @map.getRandPos()
+        pos = @map.getRandCell()
 
         for i in [0..size]
-            cell = @map.getNextPassableCell(pos.x, pos.y)
+            cell = @map.getScreenFromVec @map.getNextPassableCell(pos)
 
             if cell?
                 water = new Water cell.x, cell.y
 
                 @map.tileMap.push water
-            pos = @map.getRandPos()
-            pos = cell
+            pos = @map.getCellPos cell
 
         return
 
