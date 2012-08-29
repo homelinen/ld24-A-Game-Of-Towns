@@ -41,8 +41,10 @@ define ['tile','point', 'map'], (Tile, Point, map) ->
             if @alive
                 # Move player
 
-                cell = map.getScreenFromVec map.getNextPassableCell(@sprite.x, @sprite.y)
+                point = map.getCellPos(new Point(@x, @y))
+                cell = map.getNextPassableCell(point)
                 if cell?
+                    cell = map.getScreenFromVec cell
                     map.removeObject(@sprite.x, @sprite.y, "worker")
 
                     @sprite.moveTo(cell.x, cell.y)
