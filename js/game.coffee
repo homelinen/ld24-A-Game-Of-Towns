@@ -184,16 +184,16 @@ define [
         return
 
     createLake = (size) ->
-        pos = @map.getRandCell()
+        cell = @map.getRandCell()
 
         for i in [0..size]
-            cell = @map.getScreenFromVec @map.getNextPassableCell(pos)
-
+            cell = @map.getNextPassableCell(cell)
             if cell?
+                cell = @map.getScreenFromVec cell
                 water = new Water cell.x, cell.y
 
                 @map.tileMap.push water
-            pos = @map.getCellPos cell
+                cell = @map.getCellPos cell
 
         return
 
