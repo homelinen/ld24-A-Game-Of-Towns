@@ -36,6 +36,7 @@ define [
         @villagerLimit = 4
         @map = new Map(jaws.width, jaws.height, 32)
 
+        createLake(10)
         bushes = []
         for bush in [0..60]
     
