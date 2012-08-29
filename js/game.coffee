@@ -25,8 +25,9 @@ define [
     'gameOver',
     'fire',
     'bush',
+    'tile',
     'map'
-    ], (Worker, Water, GameOver, Fire, Bush, Map)->
+    ], (Worker, Water, GameOver, Fire, Bush, Tile, Map)->
     # Creation of the village through a map editor
     fps = document.getElementById("fps")
     simulate = true
@@ -134,15 +135,11 @@ define [
                                 else if neighbour.name == "bush"
                                     item.gather(neighbour)
 
-                        item.update(map)
-
                         if workCount >= @villPop
                             # Replace worker with a village
                             @map.removeObject(item.x, item.y, "worker")
                             createVillage(item.x, item.y)
                             @villagerLimit++
-                    else if item.name == "bush"
-                        item.update(map)
                     else if item.name == "village"
 
                         x = item.x
@@ -157,27 +154,16 @@ define [
                                     villages.push nTown[0]
 
                         if villages.length > 1
-                            console.log "CHURCH"
                             # Add current village to list as well
                             villages.push item
 
                             for village in villages
                                 @map.removeObject(village.x, village.y, "village")
 
-                            church = new Sprite {
-                                image: "img/church.png",
-                                x: x,
-                                y: y
-                            }
-                            church.name = "church"
-                            church.alive = true
-                            church.isFlammable = false
+                            church = new Tile "church", x, y, "img/church.png", false
                             @map.tileMap.push church
-                                
 
-                    else if item.name == "fire"
-                        item.update(map)
-
+                    item.update(map)
                 else
                     # Otherwise dead
                     vname = item.name
@@ -189,14 +175,7 @@ define [
     
     createVillage = (x, y) ->
         if !map.isCellOccupied(@map.getPoint(x, y))
-            village = new Sprite {
-                image: "img/village.png",
-                x: x,
-                y: y
-            }
-            village.name = "village"
-            village.alive = true
-            village.isFlammable = true
+            village = new Tile "village", x, y, "img/village.png", true
             @map.tileMap.push(village)
         return
 
