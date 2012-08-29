@@ -185,8 +185,6 @@ define [
         @totalVillagersPlaced += villagerCount
         if villagerCount < 1 && villagerLimit < 1
             jaws.switchGameState(GameOver)
-
-    return @
     
     createVillage = (x, y) ->
         if !map.isCellOccupied(@map.getPoint(x, y))
