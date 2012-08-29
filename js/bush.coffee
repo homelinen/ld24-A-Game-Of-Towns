@@ -49,8 +49,11 @@ define ['tile', 'point', 'map'], (Tile, Point, map) ->
             halfCap = @capacity * 0.2
             if @food > @capacity / 2
 
-                pos = map.getScreenFromVec map.getNextPassableCell(new Point(@x, @y))
+                point = map.getCellPos(new Point(@x, @y))
+                pos = map.getNextPassableCell(point)
                 if pos?
+                    # When pos is null, should decrement food
+                    pos = map.getScreenFromVec pos
                     bush = new Bush( pos.x, pos.y, halfCap, @capacity)
                     @food = halfCap
                     map.tileMap.push bush
