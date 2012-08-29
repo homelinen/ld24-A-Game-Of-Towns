@@ -47,6 +47,12 @@ define [], ->
             return v
 
         addVec: (v) ->
+            # Add a vector to a copy
+            
+            t = @copy()
+            t.addLocVec(v)
+
+        addLocVec: (v) ->
             # Add a vector to the current vector
             # Return the new vector, to chain methods
             @x += v.x
@@ -58,5 +64,8 @@ define [], ->
             @x += x
             @y += y
             return @
+
+        toString: ->
+            "Point: <#{@x}, #{@y}>"
 
     return Point
