@@ -46,10 +46,10 @@ define ['tile', 'point', 'map'], (Tile, Point, map) ->
 
         spread: (map) ->
             point = map.getCellPos(new Point(@x, @y))
-            pos = map.getNextPassableCell(point)
+            cell = map.getNextCell(point)
             if cell?
-                pos = getScreenFromVec pos
-                tile = map.getContentsAt(pos.x, pos.y)
+                pos = map.getScreenFromVec cell
+                tile = map.getContentsOfCell(cell)
                 if tile?
                     if !tile.isFlammable?
                         flammable = false
