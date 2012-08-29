@@ -103,6 +103,10 @@ define ['point'], (Point) ->
         isCellOccupied: (pos, tiles = @tileMap) ->
             # Decide if the cell is passable
 
+            # Check if pos is on the fringe
+            if pos.x > @mapWidth || pos.y > @mapHeight || pos.x <= 0 || pos.y <= 0
+                return true
+
             cell = tiles.cell(pos.x, pos.y)
             if cell?
                 for item in cell
@@ -134,14 +138,14 @@ define ['point'], (Point) ->
             if jaws.isArray(items) && items != undefined
                 for item in items
                     if item? && item.name == name
-                        @tileMap.cells[v.x][v.y].splice(count, 1)
+                        cell = @getCellPos(v)
+                        @tileMap.cells[cell.x][cell.y].splice(count, 1)
                         removed = true
                     count++
             removed
 
         removeAllObjects: (v) ->
-            # Remove all the objects in the cell at screen 
-            # co-ord x, y
+            # Remove all the objects in the cell at vec
             
             x = v.x
             y = v.y
@@ -163,6 +167,11 @@ define ['point'], (Point) ->
             rx = Math.round(rx) * @tileSize
             ry = Math.round(ry) * @tileSize
             @roundScreenVec new Point(rx, ry)
+
+        getRandCell: ->
+            # Get a random cell
+            pos = @getRandPos()
+            @getCellPos pos
 
         getRand: (mult) ->
             # Get a random integer that is less than the max
@@ -233,7 +242,7 @@ define ['point'], (Point) ->
         getCellPos: (pos) ->
             # Get the Vector for a cell position
              
-            return new Point @getTilePosx(pos.x), @getTilePosy(pos.y) 
+            new Point @getTilePosx(pos.x), @getTilePosy(pos.y) 
 
         getRandomDirection: ->
             # Returns a vector that represents a direction
@@ -255,19 +264,21 @@ define ['point'], (Point) ->
 
         getNextCell: (v) ->
             # Returns a random cell adjacent to the vector
-            # Uses Screen co-ordinates
 
-            dir = @getScreenFromVec @getRandomDirection()
-
-            dir.addVec(v)
-            dir
+            dir = @getRandomDirection()
+            
+            added = dir.addVec(v)
+            if !@getPosInLimits(added.x) || !@getPosInLimits(added.y)
+                v
+            else
+                added
 
         getNextPassableCell: (vCur, depth = 0) ->
 
             # 4 is the number of adjacent cells
             pos = @getNextCell(vCur)
             if depth < 4
-                if !@isCellOccupied(@getCellPos pos)
+                if !@isCellOccupied(pos)
                     return pos
                 else
                     depth += 1
