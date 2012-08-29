@@ -12,9 +12,6 @@ define ['tile', 'map'], (Tile, map) ->
             @lastDx = 0
             @lastDy = 0
         
-        draw: ->
-            @sprite.draw()
-
         update: (map) ->
             @eat(map)
             @move(map)

@@ -1,5 +1,5 @@
 
-GameOver = ->
+define [], ->
     # Game over menu State
 
     items = null

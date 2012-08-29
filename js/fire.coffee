@@ -41,7 +41,4 @@ define ['tile', 'map'], (Tile, map) ->
                         map.tileMap.push fire
             return
 
-        draw: ->
-            @sprite.draw()
-            return
     return Fire

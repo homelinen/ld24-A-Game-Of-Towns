@@ -24,4 +24,7 @@ define ['map'], (Map) ->
             @isFlammable = flammable
             return
 
+        draw: ->
+            @sprite.draw()
+
     return Tile

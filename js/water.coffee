@@ -8,6 +8,4 @@ define ['tile', 'map'], (Tile, map) ->
             flammable = false
             super name, x, y, image, flammable
 
-        draw: ->
-            @sprite.draw()
     return Water

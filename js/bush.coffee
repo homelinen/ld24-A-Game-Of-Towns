@@ -36,8 +36,4 @@ define ['tile', 'map'], (Tile, map) ->
                     @food = halfCap
                     map.tileMap.push bush
             return
-
-        draw: ->
-            @sprite.draw()
-            
     return Bush
