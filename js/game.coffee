@@ -194,6 +194,8 @@ define [
 
                 @map.tileMap.push water
                 cell = @map.getCellPos cell
+            else 
+                cell = @map.getRandCell()
 
         return
 
