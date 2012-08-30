@@ -70,7 +70,7 @@ define [
 
         if jaws.pressed "right_mouse_button"
 
-            tilePos = @map.getCellPos @map.getTileCorner(jaws.mouse_x, jaws.mouse_y)
+            tilePos = @map.getCellPos @map.roundScreenVec(new Point(jaws.mouse_x, jaws.mouse_y))
             @map.removeAllObjects(tilePos)
 
         if simulate
