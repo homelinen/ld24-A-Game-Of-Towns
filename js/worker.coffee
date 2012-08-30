@@ -75,7 +75,7 @@ define ['tile','point', 'map'], (Tile, Point, map) ->
                     @alive = false
 
             if @foodEaten > @maxFood * 0.8
-                pos = map.getRandomNeighbour(@x, @y)
+                pos = map.getRandomNeighbour(map.getCellPos new Point(@x, @y))
                 if pos? && !map.isCellOccupied(pos)
                     @food = @food / 3
                     pos = map.getScreenFromVec(pos)
