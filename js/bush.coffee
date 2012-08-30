@@ -39,11 +39,14 @@ define ['tile', 'point', 'map'], (Tile, Point, map) ->
                 amount
 
         update: (map) ->
-            growth = @capacity / 20
-            if (@food + growth) < @capacity
-                @food += growth
+            if @alive
+                # Ensure bush is alive before doing this
 
-            @spawn(map)
+                growth = @capacity / 20
+                if (@food + growth) < @capacity
+                    @food += growth
+
+                @spawn(map)
 
         spawn: (map) ->
             halfCap = @capacity * 0.2
