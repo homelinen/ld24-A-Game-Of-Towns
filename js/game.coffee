@@ -70,8 +70,8 @@ define [
 
         if jaws.pressed "right_mouse_button"
 
-            tilePos = @map.getTileCorner(jaws.mouse_x, jaws.mouse_y)
-            @map.removeAllObjects(tilePos.x, tilePos.y)
+            tilePos = @map.getCellPos @map.getTileCorner(jaws.mouse_x, jaws.mouse_y)
+            @map.removeAllObjects(tilePos)
 
         if simulate
             simulate = false
@@ -122,7 +122,7 @@ define [
                     if item.name == "worker"
                         villagerCount++
                         workCount = 0
-                        adjacentTiles = @map.getSurroundingTiles(new Point item.x, item.y)
+                        adjacentTiles = @map.getSurroundingCells(new Point item.x, item.y)
                         for point in adjacentTiles
 
                             contents = @map.getContentsOfCell(point)
