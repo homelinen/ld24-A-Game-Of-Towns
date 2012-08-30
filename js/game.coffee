@@ -122,7 +122,7 @@ define [
                     if item.name == "worker"
                         villagerCount++
                         workCount = 0
-                        adjacentTiles = @map.getSurroundingCells(new Point item.x, item.y)
+                        adjacentTiles = @map.getSurroundingCells(@map.getCellPos new Point item.x, item.y)
                         for point in adjacentTiles
 
                             contents = @map.getContentsOfCell(point)
@@ -152,7 +152,7 @@ define [
             jaws.switchGameState(GameOver)
     
     createVillage = (x, y) ->
-        if !map.isCellOccupied(new Point(x, y))
+        if !map.isCellOccupied(@map.getCellPos new Point(x, y))
             village = new Tile "village", x, y, "img/village.png", true
             @map.tileMap.push(village)
         return
@@ -165,7 +165,7 @@ define [
         y = item.y
 
         villages = []
-        adjacentTiles = @map.getSurroundingTiles(new Point x, y)
+        adjacentTiles = @map.getSurroundingCells(@map.getCellPos new Point x, y)
         for neighbour in adjacentTiles
             nTown = @map.getContentsOfType(neighbour, "village")
             if nTown.length > 0
