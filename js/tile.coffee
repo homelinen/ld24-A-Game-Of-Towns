@@ -23,7 +23,7 @@ define ['map'], (Map) ->
     class Tile
         # Represents a Tile on the map
         #
-        constructor: (name, xPos, yPos, image, flammable) ->
+        constructor: (name, xPos, yPos, image, flammable, @deletable = true) ->
             # name The name for the tile
             # xPos x co-ord on the screen for the object
             # yPos y co-ord
