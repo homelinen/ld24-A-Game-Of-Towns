@@ -122,7 +122,7 @@ define [
                     if item.name == "worker"
                         villagerCount++
                         workCount = 0
-                        adjacentTiles = @map.getSurroundingCells(new Point item.x, item.y)
+                        adjacentTiles = @map.getSurroundingCells(@map.getCellPos new Point item.x, item.y)
                         for point in adjacentTiles
 
                             contents = @map.getContentsOfCell(point)
