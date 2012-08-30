@@ -18,7 +18,7 @@
 #   Website: http://calumgilchrist.co.uk
 # 
 
-define ['tile', 'map'], (Tile, map) ->
+define ['tile', 'point', 'map'], (Tile, Point, map) ->
     class Fire extends Tile
         # Fire class, burns everything around it
         
@@ -37,18 +37,19 @@ define ['tile', 'map'], (Tile, map) ->
                 @spread(map)
 
         burn: (map) ->
-            pos = map.getPoint(@x, @y)
+            pos = map.getCellPos(new Point(@x, @y))
             if map.isCellOccupied(pos)
-                map.removeAllAtVec(pos)
+                map.removeAllObjects(pos)
                 # Add self back to map
                 map.tileMap.push @
             return
 
         spread: (map) ->
-            pos = map.getNextCell(@sprite.x, @sprite.y)
-
-            if pos?
-                tile = map.getContentsAt(pos.x, pos.y)
+            point = map.getCellPos(new Point(@x, @y))
+            cell = map.getNextCell(point)
+            if cell?
+                pos = map.getScreenFromVec cell
+                tile = map.getContentsOfCell(cell)
                 if tile?
                     if !tile.isFlammable?
                         flammable = false

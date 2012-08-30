@@ -18,7 +18,7 @@
 #   Website: http://calumgilchrist.co.uk
 # 
 
-define ['tile', 'map'], (Tile, map) ->
+define ['tile','point', 'map'], (Tile, Point, map) ->
     class Worker extends Tile
         constructor: (xPos, yPos, @carryWeight, @food) ->
             image = "img/villager.png"
@@ -41,9 +41,12 @@ define ['tile', 'map'], (Tile, map) ->
             if @alive
                 # Move player
 
-                cell = map.getNextPassableCell(@sprite.x, @sprite.y)
+                curPos = new Point(@x, @y)
+                point = map.getCellPos(curPos)
+                cell = map.getNextPassableCell(point)
                 if cell?
-                    map.removeObject(@sprite.x, @sprite.y, "worker")
+                    cell = map.getScreenFromVec cell
+                    map.removeObject(curPos, "worker")
 
                     @sprite.moveTo(cell.x, cell.y)
                     @x = @sprite.x
@@ -72,7 +75,7 @@ define ['tile', 'map'], (Tile, map) ->
                     @alive = false
 
             if @foodEaten > @maxFood * 0.8
-                pos = map.getRandomNeighbour(@x, @y)
+                pos = map.getRandomNeighbour(map.getCellPos new Point(@x, @y))
                 if pos? && !map.isCellOccupied(pos)
                     @food = @food / 3
                     pos = map.getScreenFromVec(pos)
