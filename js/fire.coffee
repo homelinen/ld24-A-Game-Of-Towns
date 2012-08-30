@@ -26,7 +26,8 @@ define ['tile', 'point', 'map'], (Tile, Point, map) ->
             image = "img/fire.png"
             name = "fire"
             flammable = false
-            super name, x, y, image, flammable
+            deletable = false
+            super name, x, y, image, flammable, deletable
             
         update: (map) ->
             @burn(map)

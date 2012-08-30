@@ -25,6 +25,7 @@ define ['tile', 'map'], (Tile, map) ->
             image = "img/water.png"
             name = "water"
             flammable = false
-            super name, x, y, image, flammable
+            deletable = false
+            super name, x, y, image, flammable, deletable
 
     return Water
