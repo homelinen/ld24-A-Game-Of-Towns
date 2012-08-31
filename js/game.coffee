@@ -25,10 +25,11 @@ define [
     'gameOver',
     'fire',
     'bush',
+    'tree',
     'tile',
     'point'
     'map'
-    ], (Worker, Water, GameOver, Fire, Bush, Tile, Point, Map)->
+    ], (Worker, Water, GameOver, Fire, Bush, Tree, Tile, Point, Map)->
     # Creation of the village through a map editor
     fps = document.getElementById("fps")
     simulate = true
@@ -39,6 +40,7 @@ define [
         @map = new Map(jaws.width, jaws.height, 32)
 
         createLake(10)
+        createForest(10)
         bushes = []
         for bush in [0..60]
     
@@ -200,5 +202,21 @@ define [
                 cell = @map.getRandCell()
 
         return
+
+    createForest = (size) ->
+        # Generate trees around the map
+        # Trees should probably cluster in areas
+
+        trees = []
+        for tree in [0..size]
+    
+            tilePos = @map.getRandPos()
+            
+            while @map.isCellOccupied @map.getCellPos tilePos
+                tilePos = @map.getRandPos()
+
+            trees.push new Tree(tilePos.x, tilePos.y)
+
+        @map.tileMap.push trees
 
     return @
