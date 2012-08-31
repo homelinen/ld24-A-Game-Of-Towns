@@ -71,7 +71,9 @@ define [
         if jaws.pressed "right_mouse_button"
 
             tilePos = @map.getCellPos @map.roundScreenVec(mousePos)
-            @map.removeAllObjects(tilePos)
+            contents = @map.getContentsOfCell(tilePos)
+            if contents.deletable? && contents.deletable 
+                @map.removeAllObjects(tilePos)
 
         if simulate
             simulate = false
