@@ -53,11 +53,11 @@ define [
         return
 
     @update = ->
+        mousePos = new Point(jaws.mouse_x, jaws.mouse_y)
         if jaws.pressed "left_mouse_button"
             workerPresent = no
 
-            point = new Point(jaws.mouse_x, jaws.mouse_y)
-
+            point = mousePos
             tilePos = @map.roundScreenVec point
             cellPos = @map.getCellPos tilePos
             notOccupied = !map.isCellOccupied cellPos
@@ -70,8 +70,10 @@ define [
 
         if jaws.pressed "right_mouse_button"
 
-            tilePos = @map.getCellPos @map.getTileCorner(jaws.mouse_x, jaws.mouse_y)
-            @map.removeAllObjects(tilePos)
+            tilePos = @map.getCellPos @map.roundScreenVec(mousePos)
+            contents = @map.getContentsOfCell(tilePos)
+            if contents.deletable? && contents.deletable 
+                @map.removeAllObjects(tilePos)
 
         if simulate
             simulate = false
