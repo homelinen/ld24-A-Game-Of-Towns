@@ -25,10 +25,11 @@ define [
     'gameOver',
     'fire',
     'bush',
+    'tree',
     'tile',
     'point'
     'map'
-    ], (Worker, Water, GameOver, Fire, Bush, Tile, Point, Map)->
+    ], (Worker, Water, GameOver, Fire, Bush, Tree, Tile, Point, Map)->
     # Creation of the village through a map editor
     fps = document.getElementById("fps")
     simulate = true
@@ -39,17 +40,9 @@ define [
         @map = new Map(jaws.width, jaws.height, 32)
 
         createLake(10)
-        bushes = []
-        for bush in [0..60]
-    
-            tilePos = @map.getRandPos()
-            
-            while @map.isCellOccupied @map.getCellPos tilePos
-                tilePos = @map.getRandPos()
+        createForest(10)
+        createBushes(60)
 
-            bushes.push new Bush(tilePos.x, tilePos.y, 2, 10)
-
-        @map.tileMap.push bushes
         return
 
     @update = ->
@@ -200,5 +193,35 @@ define [
                 cell = @map.getRandCell()
 
         return
+
+    createForest = (size) ->
+        # Generate trees around the map
+        # Trees should probably cluster in areas
+
+        tiles = getRandomTiles(size)
+        for tree in tiles
+            @map.tileMap.push new Tree(tree.x, tree.y)
+
+    createBushes = (size) ->
+        # Generate Bushes Around the Map
+        tiles = getRandomTiles(size)
+        for bush in tiles
+            @map.tileMap.push new Bush(bush.x, bush.y, 1, 10)
+        return
+
+    getRandomTiles = (size) ->
+        # Select size amount of random tiles and return a list
+        # of these vectors
+        tiles = []
+        for t in [0..size]
+    
+            tilePos = @map.getRandPos()
+            
+            while @map.isCellOccupied @map.getCellPos tilePos
+                tilePos = @map.getRandPos()
+
+            tiles.push tilePos
+
+        tiles
 
     return @
