@@ -22,7 +22,7 @@ define ['tile'], (Tile) ->
 
     class Tree extends Tile
         constructor: (xPos, yPos) ->
-            flammable = false
+            flammable = true
             name = "tree"
             super name, xPos, yPos, "img/tree.png", flammable
 
