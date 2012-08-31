@@ -41,17 +41,8 @@ define [
 
         createLake(10)
         createForest(10)
-        bushes = []
-        for bush in [0..60]
-    
-            tilePos = @map.getRandPos()
-            
-            while @map.isCellOccupied @map.getCellPos tilePos
-                tilePos = @map.getRandPos()
+        createBushes(60)
 
-            bushes.push new Bush(tilePos.x, tilePos.y, 2, 10)
-
-        @map.tileMap.push bushes
         return
 
     @update = ->
@@ -207,16 +198,30 @@ define [
         # Generate trees around the map
         # Trees should probably cluster in areas
 
-        trees = []
-        for tree in [0..size]
+        tiles = getRandomTiles(size)
+        for tree in tiles
+            @map.tileMap.push new Tree(tree.x, tree.y)
+
+    createBushes = (size) ->
+        # Generate Bushes Around the Map
+        tiles = getRandomTiles(size)
+        for bush in tiles
+            @map.tileMap.push new Bush(bush.x, bush.y, 1, 10)
+        return
+
+    getRandomTiles = (size) ->
+        # Select size amount of random tiles and return a list
+        # of these vectors
+        tiles = []
+        for t in [0..size]
     
             tilePos = @map.getRandPos()
             
             while @map.isCellOccupied @map.getCellPos tilePos
                 tilePos = @map.getRandPos()
 
-            trees.push new Tree(tilePos.x, tilePos.y)
+            tiles.push tilePos
 
-        @map.tileMap.push trees
+        tiles
 
     return @
